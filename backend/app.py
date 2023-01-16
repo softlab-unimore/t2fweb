@@ -33,8 +33,8 @@ def reader_post():
     return jsonify(res)
 
 
-@app.post('/extraction')
 @cross_origin()
+@app.post('/extraction')
 def feature_extraction_post():
     def ts_2_array(ts_list: List[Dict[str, List[float]]]):
         arr = [pd.DataFrame(ts).values for ts in ts_list]
@@ -67,8 +67,8 @@ def feature_extraction_post():
     res = json.loads(res)
     return jsonify(res)
 
-@app.post('/selection')
 @cross_origin()
+@app.post('/selection')
 def feature_selection_post():
     ts_feats = request.json.get('data', [])  # List of transformed time series
     labels = request.json.get('labels', {})  # Labels
@@ -99,8 +99,8 @@ def feature_selection_post():
 
     return jsonify(res)
 
-@app.post('/clustering')
 @cross_origin()
+@app.post('/clustering')
 def clustering_post():
     ts_feats = request.json.get('data', [])  # List of transformed time series
     n_clusters = request.json.get('n_clusters', 0)  # Number of cluster to detect
@@ -120,8 +120,8 @@ def clustering_post():
     y_pred = y_pred.tolist()
     return jsonify(y_pred)
 
-@app.post('/evaluation')
 @cross_origin()
+@app.post('/evaluation')
 def evaluation_post():
     labels = request.json.get('labels', [])  # Labels
     preds = request.json.get('preds', [])  # Model prediction

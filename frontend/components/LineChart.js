@@ -25,7 +25,7 @@ export default function LineChart({ timeserie }) {
     const datasets = Object.values(timeserie).map((d, i) => {
         return {
             label: `d${i}`,
-            data: d.map((v => v*100)),
+            data: d.map((v => v)),
             borderColor: getRandomColor(),
             backgroundColor: getRandomColor(),
             yAxisID: `y`
