@@ -17,6 +17,8 @@ const getColor = (props) => {
 }
 
 const DropzoneContainer = styled.div`
+  min-height: 250px;
+  justify-content: center;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -42,7 +44,7 @@ export default function Dropzone(props) {
   } = useDropzone({ autoFocus: true, onDrop: props.onDropFn });
 
   return (
-    <Container>
+    <Container minW='container.md'>
       <DropzoneContainer {...getRootProps({isFocused, isDragAccept, isDragReject})}>
         <input {...getInputProps()} />
         <p>Drag 'n' drop some files here, or click to select files</p>
