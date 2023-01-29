@@ -16,7 +16,7 @@ export default function handleUpload(files, callback) {
         data: fd
     }).then((r) => {
         const response = r.data;
-        response.server_data = response.data;
+        response.serverData = response.data;
         response.data = (response.data.length > 0) ? response.data.slice(0, 10) : [];
         response.labels = (response.labels.length > 0) ? response.labels.slice(0, 10) : [];
         callback(response);

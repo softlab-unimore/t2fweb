@@ -11,7 +11,7 @@ export default function handleSelect(ts_feat, callback) {
         data: {'data': ts_feat}
     }).then((r) => {
         const response = r.data;
-        response.server_data = response;
+        response.serverData = response;
         if (response.length > 0) {
             response.data = r.data.slice(0, 20);
         }
