@@ -14,6 +14,15 @@ import {
     AccordionPanel,
     AccordionIcon,
     Container,
+    Table,
+    Thead,
+    Tbody,
+    Tfoot,
+    Tr,
+    Th,
+    Td,
+    TableCaption,
+    TableContainer,
 } from '@chakra-ui/react';
 import { CheckCircleIcon } from '@chakra-ui/icons';
 import handleExtraction from '../utils/extraction';
@@ -29,7 +38,7 @@ const LineChart = dynamic(() => import("../components/LineChart"), {
 
 export default function features() {
     const [{ data, serverData, labels, features, featureRequestSent }, setBaseState] = useRecoilState(baseState);
-    console.log(data, labels);
+    console.log(data, labels, features);
 
     useEffect(() => {
         if (serverData !== undefined && !featureRequestSent) {
@@ -41,7 +50,6 @@ export default function features() {
                         featureRequestSent: true
                     }
                 });
-                console.log(features);
             })
         }
     }, []);
@@ -70,7 +78,7 @@ export default function features() {
             </Box>
 
             <Container minW='container.lg'>
-                <Accordion defaultIndex={[0]} allowToggle>
+                <Accordion defaultIndex={[0]} allowToggle allowMultiple>
                     <AccordionItem>
                         <h2>
                             <AccordionButton>
@@ -97,6 +105,51 @@ export default function features() {
                                     )
                                 })}
                             </SimpleGrid>
+                        </AccordionPanel>
+                    </AccordionItem>
+                    <AccordionItem>
+                        <h2>
+                            <AccordionButton>
+                                <Box as="span" flex='1' textAlign='left'>
+                                    Features
+                                </Box>
+                                <AccordionIcon />
+                            </AccordionButton>
+                        </h2>
+                        <AccordionPanel pb={4}>
+                            {features && features.data !== undefined && features.data.length > 0 && <TableContainer>
+                                <Table size='sm' variant='striped' colorScheme='green'>
+                                    <Thead>
+                                    <Tr>
+                                        <Th></Th>
+                                        {Object.keys(features.data[0]).slice(0, 40).map((k) => {
+                                            return (
+                                                <Th isNumeric>{k}</Th>
+                                            );
+                                        })}
+                                    </Tr>
+                                    </Thead>
+                                    <Tbody>
+                                    {features.data.map((v, k) => {
+                                        return (
+                                            <Tr>
+                                                <Td>{labels[k] ? labels[k] : `Timeserie ${k}`}</Td>
+                                                {Object.values(v).slice(0, 40).map((feat) => <Td isNumeric>{feat}</Td>)}
+                                            </Tr>
+                                        )
+                                    })}
+                                    </Tbody>
+                                    <Tfoot>
+                                    <Tr>
+                                        {Object.keys(features.data[0]).map((k) => {
+                                            return (
+                                                <Th isNumeric>{k}</Th>
+                                            );
+                                        })}
+                                    </Tr>
+                                    </Tfoot>
+                                </Table>
+                            </TableContainer>}
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
