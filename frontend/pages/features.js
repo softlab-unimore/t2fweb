@@ -21,14 +21,14 @@ import {
     Tr,
     Th,
     Td,
-    TableCaption,
+    Checkbox,
     TableContainer,
 } from '@chakra-ui/react';
 import { CheckCircleIcon } from '@chakra-ui/icons';
 import handleExtraction from '../utils/extraction';
 
 import { useRecoilState } from 'recoil';
-import { baseState } from '../state/index';
+import { baseState, labelState, featuresState, featuresSelectedState } from '../state/index';
 
 import dynamic from "next/dynamic"
 const LineChart = dynamic(() => import("../components/LineChart"), {
@@ -37,31 +37,45 @@ const LineChart = dynamic(() => import("../components/LineChart"), {
 })
 
 export default function features() {
-    const [{ data, serverData, labels, features, featureRequestSent }, setBaseState] = useRecoilState(baseState);
+    const [{ data, serverData }, setBaseState] = useRecoilState(baseState);
+    const [labels, setLabels] = useRecoilState(labelState);
+    const [{ features, featureRequestSent }, setFeatures] = useRecoilState(featuresState);
+    const [featuresSelected, setFeaturesSelected] = useRecoilState(featuresSelectedState);
     console.log(data, labels, features);
 
     useEffect(() => {
         if (serverData !== undefined && !featureRequestSent) {
             handleExtraction(serverData, 100, 2, (extractionData) => {
-                setBaseState((old) => {
+                setFeatures((old) => {
                     return {
                         ...old,
                         features: extractionData,
                         featureRequestSent: true
                     }
                 });
+
+                setFeaturesSelected(() => {
+                    return Object.assign({}, ...extractionData.featuresSelected);
+                });
             })
         }
     }, []);
 
-    const setLabel = (e, i) => {
-        setBaseState((old) => {
-            const newLabels = [...old.labels];
-            newLabels[i] = e.target.value;
-            return {
-                ...old,
-                labels
-            }
+    const onChangeLabel = (e, i) => {
+        const newLabels = [...labels];
+        newLabels[i] = e.target.value;
+        setLabels(() => {
+            return [
+                ...newLabels,
+            ]
+        })
+    }
+
+    const onFeatureCheck = (e, i) => {
+        const newFeatures = {...featuresSelected};
+        newFeatures[i] = e.target.checked;
+        setFeaturesSelected((old) => {
+            return newFeatures;
         })
     }
 
@@ -78,7 +92,7 @@ export default function features() {
             </Box>
 
             <Container minW='container.lg'>
-                <Accordion defaultIndex={[0]} allowToggle allowMultiple>
+                <Accordion defaultIndex={[0]} allowMultiple>
                     <AccordionItem>
                         <h2>
                             <AccordionButton>
@@ -95,7 +109,7 @@ export default function features() {
                                         <Box key={i}>
                                             <Card>
                                                 <CardHeader>
-                                                    <Input value={labels[i]} onChange={(e) => setLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
+                                                    <Input value={labels[i]} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
                                                 </CardHeader>
                                                 <CardBody>
                                                     <LineChart timeserie={timeserie} />
@@ -123,8 +137,12 @@ export default function features() {
                                     <Tr>
                                         <Th></Th>
                                         {Object.keys(features.data[0]).slice(0, 40).map((k) => {
+                                            console.log(featuresSelected[k])
                                             return (
-                                                <Th isNumeric>{k}</Th>
+                                                <Th isNumeric>
+                                                    <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
+                                                    &nbsp;{k}
+                                                </Th>
                                             );
                                         })}
                                     </Tr>
@@ -141,9 +159,13 @@ export default function features() {
                                     </Tbody>
                                     <Tfoot>
                                     <Tr>
-                                        {Object.keys(features.data[0]).map((k) => {
+                                        <Th></Th>
+                                        {Object.keys(features.data[0]).slice(0, 40).map((k) => {
                                             return (
-                                                <Th isNumeric>{k}</Th>
+                                                <Th isNumeric>
+                                                    <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
+                                                    &nbsp;{k}
+                                                </Th>
                                             );
                                         })}
                                     </Tr>

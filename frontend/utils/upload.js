@@ -17,8 +17,14 @@ export default function handleUpload(files, callback) {
     }).then((r) => {
         const response = r.data;
         response.serverData = response.data;
-        response.data = (response.data.length > 0) ? response.data.slice(0, 10) : [];
-        response.labels = (response.labels.length > 0) ? response.labels.slice(0, 10) : [];
+        response.data = (response.data.length > 0) ? response.data.slice(0, 15) : [];
+        if (response.labels.length > 0) {
+            response.labels.slice(0, 10);
+        } else {
+            response.labels = response.data.map((v, i) => `Timeserie ${i+1}`);
+            response.serverData.labels = response.serverData.map((v, i) => `Timeserie ${i+1}`);
+        }
+
         callback(response);
     }).catch((e) => {
         console.log(e);

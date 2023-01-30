@@ -10,18 +10,20 @@ import { useRouter } from 'next/router';
 import handleUpload from '../utils/upload';
 import Dropzone from '../components/Dropzone';
 
-import { useRecoilState } from 'recoil';
-import { baseState } from '../state/index';
+import { useSetRecoilState } from 'recoil';
+import { baseState, labelState } from '../state/index';
 
 export default function CallToActionWithAnnotation() {
     const router = useRouter();
-    const [timeseries, setTimeseries] = useRecoilState(baseState);
+    const setTimeseries = useSetRecoilState(baseState);
+    const setLabels = useSetRecoilState(labelState);
     const onDrop = (files) => {
         handleUpload(files, onUploadCallback);
     }
 
     const onUploadCallback = (data) => {
         setTimeseries(data);
+        setLabels(data.labels);
         router.push('/features');
     };
 

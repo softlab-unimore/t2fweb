@@ -12,7 +12,7 @@ function getRandomColor() {
     return color;
   }
 
-export default function LineChart({ timeserie }) {
+const LineChart = React.memo(({ timeserie }) => {
     if (timeserie.length === 0) return;
 
     useEffect(() => {
@@ -99,4 +99,6 @@ export default function LineChart({ timeserie }) {
     };
 
     return <Line options={options} data={data} />;
-}
+})
+
+export default LineChart;

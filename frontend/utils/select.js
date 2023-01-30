@@ -13,7 +13,7 @@ export default function handleSelect(ts_feat, callback) {
         const response = r.data;
         response.serverData = response;
         if (response.length > 0) {
-            response.data = r.data.slice(0, 20);
+            response.data = r.data.slice(0, 15);
         }
         console.log(response)
         callback(response);
