@@ -23,9 +23,12 @@ import {
     Td,
     Checkbox,
     TableContainer,
+    Button,
+    Select,
 } from '@chakra-ui/react';
 import { CheckCircleIcon } from '@chakra-ui/icons';
 import handleExtraction from '../utils/extraction';
+import handleSelect from '../utils/select';
 
 import { useRecoilState } from 'recoil';
 import { baseState, labelState, featuresState, featuresSelectedState } from '../state/index';
@@ -41,7 +44,7 @@ export default function features() {
     const [labels, setLabels] = useRecoilState(labelState);
     const [{ features, featureRequestSent }, setFeatures] = useRecoilState(featuresState);
     const [featuresSelected, setFeaturesSelected] = useRecoilState(featuresSelectedState);
-    console.log(data, labels, features);
+    const [{ modelType, transformType }, setParams] = useState({ modelType: 'Hierarchical', transformType: 'std' });
 
     useEffect(() => {
         if (serverData !== undefined && !featureRequestSent) {
@@ -79,6 +82,19 @@ export default function features() {
         })
     }
 
+    const updateSelectedFeatures = () => {
+        const enabledFeatures = Object.keys(featuresSelected).filter((k) => featuresSelected[k]);
+        let requestFeatures = features.data;
+        if (enabledFeatures.length !== Object.keys(featuresSelected).length) {
+            requestFeatures.map((timeserieFeats) => {
+                return Object.fromEntries(Object.entries(timeserieFeats).filter((k) => enabledFeatures.includes(k[0])));
+            })
+
+        }
+        console.log(requestFeatures);
+        handleSelect(requestFeatures, (data) => console.log(data));
+    };
+
     return (
         <>
             <Box textAlign="center" py={10} px={6}>
@@ -89,6 +105,23 @@ export default function features() {
                 <Text color={'gray.500'}>
                     Now you can view your timeseries, select and assign/edit label to features and go on
                 </Text>
+            </Box>
+
+            <Box textAlign="center" py={10} px={6}>
+                <Select onChange={(e) => setParams({ modelType: modelType, transformType: e.target.value })} value={transformType} name='transform_type' placeholder='Select option'>
+                    <option value='std'>std</option>
+                    <option value='minmax'>minmax</option>
+                    <option value=''>empty</option>
+                </Select>
+                <Select onChange={(e) => setParams({ modelType: e.target.value, transformType: transformType })} value={modelType} name='model_type' placeholder='Select option'>
+                    <option value='Hierarchical'>Hierarchical</option>
+                    <option value='KMeans'>KMeans</option>
+                    <option value='Spectral'>Spectral</option>
+                </Select>
+                <br />
+                <Button colorScheme='green' variant='outline'>
+                    Build cluster graph
+                </Button>
             </Box>
 
             <Container minW='container.lg'>
@@ -135,9 +168,12 @@ export default function features() {
                                 <Table size='sm' variant='striped' colorScheme='green'>
                                     <Thead>
                                     <Tr>
-                                        <Th></Th>
+                                        <Th>
+                                        <Button onClick={updateSelectedFeatures} colorScheme='green' variant='outline'>
+                                            Update selection
+                                        </Button>
+                                        </Th>
                                         {Object.keys(features.data[0]).slice(0, 40).map((k) => {
-                                            console.log(featuresSelected[k])
                                             return (
                                                 <Th isNumeric>
                                                     <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
@@ -151,7 +187,9 @@ export default function features() {
                                     {features.data.map((v, k) => {
                                         return (
                                             <Tr>
-                                                <Td>{labels[k] ? labels[k] : `Timeserie ${k}`}</Td>
+                                                <Td>
+                                                    {labels[k] ? labels[k] : `Timeserie ${k}`}
+                                                </Td>
                                                 {Object.values(v).slice(0, 40).map((feat) => <Td isNumeric>{feat}</Td>)}
                                             </Tr>
                                         )
