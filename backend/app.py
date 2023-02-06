@@ -1,5 +1,6 @@
 from typing import List, Dict
 from flask import Flask, request, jsonify, abort
+from flask_cors import CORS, cross_origin
 
 import json
 import numpy as np
@@ -11,15 +12,18 @@ from .t2f.importance import feature_selection
 from .t2f.clustering import ClusterWrapper, cluster_metrics
 
 app = Flask(__name__)
+app.config['CORS_HEADERS'] = 'Content-Type'
+cors = CORS(app, supports_credentials=True)
 
 
 @app.errorhandler(400)
 def resource_not_found(e):
     return jsonify(error=str(e)), 400
 
-
+@cross_origin()
 @app.post('/reader')
 def reader_post():
+    print('q')
     f = request.files['file']
     df, y = read_mts(f)
     res = {
@@ -29,6 +33,7 @@ def reader_post():
     return jsonify(res)
 
 
+@cross_origin()
 @app.post('/extraction')
 def feature_extraction_post():
     def ts_2_array(ts_list: List[Dict[str, List[float]]]):
@@ -62,7 +67,7 @@ def feature_extraction_post():
     res = json.loads(res)
     return jsonify(res)
 
-
+@cross_origin()
 @app.post('/selection')
 def feature_selection_post():
     ts_feats = request.json.get('data', [])  # List of transformed time series
@@ -94,7 +99,7 @@ def feature_selection_post():
 
     return jsonify(res)
 
-
+@cross_origin()
 @app.post('/clustering')
 def clustering_post():
     ts_feats = request.json.get('data', [])  # List of transformed time series
@@ -115,7 +120,7 @@ def clustering_post():
     y_pred = y_pred.tolist()
     return jsonify(y_pred)
 
-
+@cross_origin()
 @app.post('/evaluation')
 def evaluation_post():
     labels = request.json.get('labels', [])  # Labels
@@ -132,4 +137,4 @@ def evaluation_post():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5000, debug=True)
