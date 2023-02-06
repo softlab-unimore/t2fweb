@@ -30,4 +30,14 @@ const featuresSelectedState = atom({
     default: []
 })
 
-export { baseState, labelState, featuresState, featuresSelectedState };
+const selectState = atom({
+    key: 'selectState',
+    default: undefined
+})
+
+const clusteringState = atom({
+    key: 'clusteringState',
+    default: undefined
+})
+
+export { baseState, labelState, featuresState, featuresSelectedState, selectState, clusteringState };
