@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 def scenario(semisupervised: bool = False):
     """ Scenario1&2: Multivariate Time Series Dataset with Label and Unsupervised or Semi Supervised Clustering """
     # Read multivariate time series dataset request
-    filename = 'data/BasicMotionsNoLabel.txt'  # Dataset file path
+    filename = 'data/BasicMotionsLabel.txt'  # Dataset file path
     # Create request object
     files = {'file': open(filename, 'rb')}
     r = requests.post('http://localhost:5000/reader', files=files)
@@ -22,18 +22,11 @@ def scenario(semisupervised: bool = False):
     ts_feats = r.json()
 
     if semisupervised and labels:
-        # Extract some label
-        indexes = np.arange(len(labels))
-        pos_train, _, y_train, _ = train_test_split(indexes, labels, train_size=16)
+        # Read training labels to pass in the semi-supervised selection request
+        payload = {'labels': labels, 'train_size': 0.4}
+        r = requests.post('http://localhost:5000/split', json=payload)
+        label_train = r.json()
 
-        # Define integer index
-        pos_train = pos_train.tolist()
-
-        # Define integer class
-        y_train = pd.get_dummies(y_train).sort_index(axis=1).apply(np.argmax, axis=1).to_list()
-
-        # Create labels to pass in the request
-        label_train = {i: j for i, j in zip(pos_train, y_train)}
         # Semisupervised feature selection
         payload = {'data': ts_feats, 'labels': label_train, 'model_type': 'Hierarchical', 'transform_type': 'minmax'}
 
@@ -58,4 +51,4 @@ def scenario(semisupervised: bool = False):
 
 
 if __name__ == '__main__':
-    scenario(semisupervised=False)
+    scenario(semisupervised=True)

@@ -5,6 +5,7 @@ from flask_cors import CORS, cross_origin
 import json
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from .reader import read_mts
 from .t2f.extractor import feature_extraction
@@ -19,6 +20,7 @@ cors = CORS(app, supports_credentials=True)
 @app.errorhandler(400)
 def resource_not_found(e):
     return jsonify(error=str(e)), 400
+
 
 @cross_origin()
 @app.post('/reader')
@@ -67,6 +69,40 @@ def feature_extraction_post():
     res = json.loads(res)
     return jsonify(res)
 
+
+@cross_origin()
+@app.post('/split')
+def train_split_post():
+    labels = request.json.get('labels', [])  # List of labels
+    train_size = request.json.get('train_size', 0)  # Training size
+
+    # Check labels
+    if not labels:
+        # No labels in the request object
+        abort(400, 'List of labels is missing')
+    if train_size < 0:
+        # Train size is not greater than 0
+        abort(400, 'Train size must be greater than 0')
+
+    # Extract training labels
+    indexes = np.arange(len(labels))
+    pos_train, _, y_train, _ = train_test_split(indexes, labels, train_size=train_size)
+
+    # Define integer index
+    pos_train = pos_train.tolist()
+
+    # Define integer class
+    y_train = pd.get_dummies(y_train).sort_index(axis=1).apply(np.argmax, axis=1).to_list()
+
+    # Create labels to pass in the request
+    label_train = {i: j for i, j in zip(pos_train, y_train)}
+
+    # Create response object
+    res = label_train
+
+    return jsonify(res)
+
+
 @cross_origin()
 @app.post('/selection')
 def feature_selection_post():
@@ -99,6 +135,7 @@ def feature_selection_post():
 
     return jsonify(res)
 
+
 @cross_origin()
 @app.post('/clustering')
 def clustering_post():
@@ -119,6 +156,7 @@ def clustering_post():
     y_pred = model.fit_predict(ts_feats)
     y_pred = y_pred.tolist()
     return jsonify(y_pred)
+
 
 @cross_origin()
 @app.post('/evaluation')
