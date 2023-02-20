@@ -59,7 +59,8 @@ export default function features() {
     const [select, setSelectState] = useRecoilState(selectState);
     const [clustering, setClusteringState] = useRecoilState(clusteringState);
 
-    const { isOpen, onOpen, onClose } = useDisclosure()
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const [modalTimeserie, setModalTimeserie] = useState([]);
 
     const [evaluation, setEvaluation] = useState(undefined);
     const [ncluster, setNcluster] = useState(4);
@@ -126,6 +127,11 @@ export default function features() {
         }
     };
 
+    const handleModalChart = (timeserie) => {
+        setModalTimeserie(timeserie);
+        onOpen();
+    };
+
     return (
         <>
             <Box textAlign="center" py={10} px={6}>
@@ -158,11 +164,22 @@ export default function features() {
                         </Select>
                     </label>
                     <br />
-                    <Button onClick={() => onClustering()} colorScheme='green' variant='outline'>
+                    <Button isLoading={!features} loadingText='Processing, loading features...' onClick={() => onClustering()} colorScheme='green' variant='outline'>
                         Build cluster graph
                     </Button>
                 </Container>
             </Box>
+
+            {evaluation !== undefined &&
+            <Container maxW='md'>
+                <Text>Evaluation</Text>
+                {Object.keys(evaluation).map((v) => {
+                    return (<label>
+                        {v}
+                        <Progress colorScheme='green' size='md' value={evaluation[v]*100} />
+                    </label>)
+                })}
+            </Container>}
 
             <Container minW='container.lg'>
                 <Accordion defaultIndex={[0]} allowMultiple>
@@ -185,7 +202,7 @@ export default function features() {
                                                     <Input value={labels[i] ? labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
                                                 </CardHeader>
                                                 <CardBody>
-                                                    <LineChart timeserie={timeserie} />
+                                                    <LineChart clickHandler={handleModalChart} timeserie={timeserie} />
                                                 </CardBody>
                                             </Card>
                                         </Box>
@@ -254,24 +271,13 @@ export default function features() {
                     </AccordionItem>
                 </Accordion>
             </Container>
-            <Modal isOpen={isOpen} size='md' onClose={onClose}>
+            <Modal isOpen={isOpen} size='full' onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
-                <ModalHeader>Modal Title</ModalHeader>
+                <ModalHeader />
                 <ModalCloseButton />
                 <ModalBody>
-                    <Text>Clustering</Text>
-                    <BarsChart data={clustering ? clustering.data : []} />
-                    <br />
-                    <Container maxW='md'>
-                        <Text>Evaluation</Text>
-                        {evaluation !== undefined && Object.keys(evaluation).map((v) => {
-                           return (<label>
-                                {v}
-                                <Progress colorScheme='green' size='md' value={evaluation[v]*100} />
-                            </label>)
-                        })}
-                    </Container>
+                    <LineChart timeserie={modalTimeserie} />
                 </ModalBody>
                 <ModalFooter>
                     <Button colorScheme='green' mr={3} onClick={onClose}>

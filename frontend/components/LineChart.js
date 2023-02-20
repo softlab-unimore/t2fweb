@@ -12,22 +12,24 @@ function getRandomColor() {
     return color;
   }
 
-const LineChart = React.memo(({ timeserie }) => {
+const color = [...Array(200)].map(() => getRandomColor());
+const LineChart = React.memo(({ timeserie, clickHandler }) => {
     if (timeserie.length === 0) return;
-
+    
     useEffect(() => {
-        ChartJS.register(
-            ...registerables,
-            zoomPlugin
-        );
+      ChartJS.register(
+        ...registerables,
+        zoomPlugin
+      );
     }, []);
+
     const labels = Object.values(timeserie)[0].map(() => '');
     const datasets = Object.values(timeserie).map((d, i) => {
         return {
             label: `d${i}`,
             data: d.map((v => v)),
-            borderColor: getRandomColor(),
-            backgroundColor: getRandomColor(),
+            borderColor: color[i],
+            backgroundColor: color[i],
             yAxisID: `y`,
             pointRadius: 0,
         };
@@ -74,11 +76,11 @@ const LineChart = React.memo(({ timeserie }) => {
                   mode: 'xy',
                 },
                 zoom: {
-                  wheel: {
+                  drag: {
                     enabled: false,
                   },
                   pinch: {
-                    enabled: true
+                    enabled: false
                   },
                   mode: 'xy',
                   onZoomComplete({chart}) {
@@ -98,7 +100,7 @@ const LineChart = React.memo(({ timeserie }) => {
         },
     };
 
-    return <Line onClick={() => console.log('open modal')} options={options} data={data} />;
+    return <Line onClick={() => typeof(clickHandler) === 'function' ? clickHandler(timeserie) : null} options={options} data={data} />;
 })
 
 export default LineChart;
