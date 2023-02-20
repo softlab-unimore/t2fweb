@@ -34,6 +34,12 @@ import {
     ModalCloseButton,
     useDisclosure,
     Progress,
+    Slider,
+    SliderTrack,
+    SliderFilledTrack,
+    SliderThumb,
+    Tooltip,
+    SliderMark,
 } from '@chakra-ui/react';
 import { CheckCircleIcon } from '@chakra-ui/icons';
 import handleExtraction from '../utils/extraction';
@@ -64,6 +70,8 @@ export default function features() {
 
     const [evaluation, setEvaluation] = useState(undefined);
     const [ncluster, setNcluster] = useState(4);
+    const [trainSizeValue, setSliderValue] = useState(30)
+    const [showTooltip, setShowTooltip] = React.useState(false)
     const [{ modelType, transformType }, setParams] = useState({ modelType: 'Hierarchical', transformType: 'std' });
 
     useEffect(() => {
@@ -145,7 +153,7 @@ export default function features() {
             </Box>
 
             <Box textAlign="center" py={10} px={6}>
-                <Container maxW='md'>
+                <Container maxW='sm'>
                     <label>
                         Transform Type
                     <Select onChange={(e) => setParams({ modelType: modelType, transformType: e.target.value })} value={transformType} name='transform_type' placeholder='Select option'>
@@ -164,7 +172,41 @@ export default function features() {
                         </Select>
                     </label>
                     <br />
-                    <Button isLoading={!features} loadingText='Processing, loading features...' onClick={() => onClustering()} colorScheme='green' variant='outline'>
+                    {labels.length > 0 && <label>
+                        Train size
+                        <Slider
+                            colorScheme='green'
+                            onChange={(val) => setSliderValue(val)} 
+                            onMouseEnter={() => setShowTooltip(true)}
+                            onMouseLeave={() => setShowTooltip(false)}
+                        >
+                            <SliderMark value={25} mt='2' ml='-2.5' fontSize='sm'>
+                            25%
+                            </SliderMark>
+                            <SliderMark value={50} mt='2' ml='-2.5' fontSize='sm'>
+                            50%
+                            </SliderMark>
+                            <SliderMark value={75} mt='2' ml='-2.5' fontSize='sm'>
+                            75%
+                            </SliderMark>
+                            <SliderTrack>
+                                <SliderFilledTrack />
+                            </SliderTrack>
+                            <Tooltip
+                                hasArrow
+                                bg='green.500'
+                                color='white'
+                                placement='top'
+                                isOpen={showTooltip}
+                                label={`${trainSizeValue}%`}
+                            >
+                                <SliderThumb />
+                            </Tooltip>
+                        </Slider>
+                    </label>}
+                    <br />
+                    <div className='clearfix' />
+                    <Button mt='5' isLoading={!features} loadingText='Processing, loading features...' onClick={() => onClustering()} colorScheme='green' variant='outline'>
                         Build cluster graph
                     </Button>
                 </Container>

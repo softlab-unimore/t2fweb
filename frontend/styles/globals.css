@@ -112,3 +112,7 @@ a {
   z-index: 1;
   background: #fff;
 }
+
+.clearfix {
+  clear: both;
+}
