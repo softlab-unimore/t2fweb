@@ -62,6 +62,7 @@ export default function features() {
     const { isOpen, onOpen, onClose } = useDisclosure()
 
     const [evaluation, setEvaluation] = useState(undefined);
+    const [ncluster, setNcluster] = useState(4);
     const [{ modelType, transformType }, setParams] = useState({ modelType: 'Hierarchical', transformType: 'std' });
 
     useEffect(() => {
@@ -117,7 +118,7 @@ export default function features() {
     const onClustering = () => {
         updateSelectedFeatures();
         if (select) {
-            handleClustering(select, 4, modelType, transformType, (d) => {
+            handleClustering(select, ncluster, modelType, transformType, (d) => {
                 setClusteringState(d);
                 handleEvaluation(d.data, labels ? labels : d.data.map((v) => 'x'), setEvaluation);
                 onOpen();
@@ -181,7 +182,7 @@ export default function features() {
                                         <Box key={i}>
                                             <Card>
                                                 <CardHeader>
-                                                    <Input value={labels[i]} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
+                                                    <Input value={labels[i] ? labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
                                                 </CardHeader>
                                                 <CardBody>
                                                     <LineChart timeserie={timeserie} />
@@ -207,10 +208,10 @@ export default function features() {
                                 <Table size='sm' variant='striped' colorScheme='green'>
                                     <Thead>
                                     <Tr>
-                                        <Th>
-                                        <Button onClick={updateSelectedFeatures} colorScheme='green' variant='outline'>
-                                            Update selection
-                                        </Button>
+                                        <Th className='sticky-column'>
+                                            <Button onClick={updateSelectedFeatures} colorScheme='green' variant='outline'>
+                                                Update selection
+                                            </Button>
                                         </Th>
                                         {Object.keys(features.data[0]).slice(0, 40).map((k) => {
                                             return (
@@ -226,7 +227,7 @@ export default function features() {
                                     {features.data.map((v, k) => {
                                         return (
                                             <Tr>
-                                                <Td>
+                                                <Td className='sticky-column'>
                                                     {labels[k] ? labels[k] : `Timeserie ${k}`}
                                                 </Td>
                                                 {Object.values(v).slice(0, 40).map((feat) => <Td isNumeric>{feat}</Td>)}
@@ -253,7 +254,7 @@ export default function features() {
                     </AccordionItem>
                 </Accordion>
             </Container>
-            <Modal isOpen={isOpen} size='full' onClose={onClose}>
+            <Modal isOpen={isOpen} size='md' onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
                 <ModalHeader>Modal Title</ModalHeader>

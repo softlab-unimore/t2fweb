@@ -105,3 +105,10 @@ a {
     color-scheme: dark;
   }
 }
+
+.sticky-column {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+}
