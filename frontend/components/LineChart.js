@@ -28,7 +28,8 @@ const LineChart = React.memo(({ timeserie }) => {
             data: d.map((v => v)),
             borderColor: getRandomColor(),
             backgroundColor: getRandomColor(),
-            yAxisID: `y`
+            yAxisID: `y`,
+            pointRadius: 0,
         };
     });
 
@@ -74,7 +75,7 @@ const LineChart = React.memo(({ timeserie }) => {
                 },
                 zoom: {
                   wheel: {
-                    enabled: true,
+                    enabled: false,
                   },
                   pinch: {
                     enabled: true
@@ -92,13 +93,12 @@ const LineChart = React.memo(({ timeserie }) => {
                 display: false
             },
             title: {
-                display: true,
-                text: 'Chart.js Line Chart',
+                display: false,
             },
         },
     };
 
-    return <Line options={options} data={data} />;
+    return <Line onClick={() => console.log('open modal')} options={options} data={data} />;
 })
 
 export default LineChart;

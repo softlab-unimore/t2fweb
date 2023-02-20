@@ -217,7 +217,7 @@ export default function features() {
                                             return (
                                                 <Th isNumeric>
                                                     <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
-                                                    &nbsp;{k}
+                                                    &nbsp;{k.replace(/_|\d+/g, '')}
                                                 </Th>
                                             );
                                         })}
@@ -230,7 +230,7 @@ export default function features() {
                                                 <Td className='sticky-column'>
                                                     {labels[k] ? labels[k] : `Timeserie ${k}`}
                                                 </Td>
-                                                {Object.values(v).slice(0, 40).map((feat) => <Td isNumeric>{feat}</Td>)}
+                                                {Object.values(v).slice(0, 40).map((feat) => <Td isNumeric>{feat.toFixed(2)}</Td>)}
                                             </Tr>
                                         )
                                     })}
@@ -242,7 +242,7 @@ export default function features() {
                                             return (
                                                 <Th isNumeric>
                                                     <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
-                                                    &nbsp;{k}
+                                                    &nbsp;{k.replace(/_|\d+/g, '')}
                                                 </Th>
                                             );
                                         })}
