@@ -46,6 +46,7 @@ import handleExtraction from '../utils/extraction';
 import handleSelect from '../utils/select';
 import handleClustering from '../utils/clustering';
 import handleEvaluation from '../utils/evalutation';
+import handleSplit from '../utils/split';
 import BarsChart from '../components/BarChart';
 
 import { useRecoilState } from 'recoil';
@@ -67,6 +68,8 @@ export default function features() {
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [modalTimeserie, setModalTimeserie] = useState([]);
+
+    const [labelTrain, setLabelTrain] = useState([]);
 
     const [evaluation, setEvaluation] = useState(undefined);
     const [ncluster, setNcluster] = useState(4);
@@ -127,7 +130,9 @@ export default function features() {
     const onClustering = () => {
         updateSelectedFeatures();
         if (select) {
-            handleClustering(select, ncluster, modelType, transformType, (d) => {
+            // valutare qui se labels esiste, nel caso passare labels trains
+            const labels = (labelTrain.length > 0) ? labelTrain : null;
+            handleClustering(select, ncluster, modelType, transformType, labels, (d) => {
                 setClusteringState(d);
                 handleEvaluation(d.data, labels ? labels : d.data.map((v) => 'x'), setEvaluation);
                 onOpen();
@@ -152,7 +157,7 @@ export default function features() {
                 </Text>
             </Box>
 
-            <Box textAlign="center" py={10} px={6}>
+            <Box textAlign="center" py={labels.length > 0 ? 10 : 0} px={6}>
                 <Container maxW='sm'>
                     <label>
                         Transform Type
@@ -172,7 +177,12 @@ export default function features() {
                         </Select>
                     </label>
                     <br />
-                    {labels.length > 0 && <label>
+                    <label>
+                        Num clusters
+                        <Input variant='outline' onChange={({ target }) => setNcluster(target.value)} placeholder='n clusters' value={ncluster} />
+                    </label>
+                    <br />
+                    {labels.length > 0 && <><label>
                         Train size
                         <Slider
                             colorScheme='green'
@@ -203,7 +213,12 @@ export default function features() {
                                 <SliderThumb />
                             </Tooltip>
                         </Slider>
-                    </label>}
+                    </label>
+                    <Button onClick={() => handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data))} mt='5'>
+                        Update train size
+                    </Button>
+                    </>
+                    }
                     <br />
                     <div className='clearfix' />
                     <Button mt='5' isLoading={!features} loadingText='Processing, loading features...' onClick={() => onClustering()} colorScheme='green' variant='outline'>
