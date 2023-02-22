@@ -88,12 +88,25 @@ export default function features() {
                     }
                 });
 
+                if (labels.length > 0) {
+                    handleSplit(labels, trainSizeValue/100, (d) => {
+                        setLabelTrain(d.data);
+                        console.log(d.data);
+                    });
+                }
+
                 setFeaturesSelected(() => {
                     return Object.assign({}, ...extractionData.featuresSelected);
                 });
-            })
+            });
         }
     }, []);
+
+    useEffect(() => {
+        if (features) {
+            updateSelectedFeatures();
+        }
+    }, [features])
 
     const onChangeLabel = (e, i) => {
         const newLabels = [...labels];
@@ -121,21 +134,21 @@ export default function features() {
             requestFeatures.map((timeserieFeats) => {
                 return Object.fromEntries(Object.entries(timeserieFeats).filter((k) => enabledFeatures.includes(k[0])));
             })
-
         }
-        console.log(requestFeatures);
-        handleSelect(requestFeatures, (data) => setSelectState(data));
+
+        const labelTrainData = (Object.values(labelTrain).length > 0) ? Object.fromEntries(Object.entries(labelTrain).filter((k) => k[0] <= 14)) : null;
+        handleSelect(requestFeatures, modelType, transformType, labelTrainData, (data) => setSelectState(data));
     };
 
     const onClustering = () => {
         updateSelectedFeatures();
         if (select) {
-            // valutare qui se labels esiste, nel caso passare labels trains
-            const labels = (labelTrain.length > 0) ? labelTrain : null;
-            handleClustering(select, ncluster, modelType, transformType, labels, (d) => {
+            const labelTrainData = (Object.values(labelTrain).length > 0) ? labelTrain : null;
+            handleClustering(select, ncluster, modelType, transformType, labelTrainData, (d) => {
                 setClusteringState(d);
-                handleEvaluation(d.data, labels ? labels : d.data.map((v) => 'x'), setEvaluation);
-                onOpen();
+                if (labels.length > 0) {
+                    handleEvaluation(d.data, labels.slice(0, 15), setEvaluation);
+                }
             });
         }
     };
@@ -179,7 +192,7 @@ export default function features() {
                     <br />
                     <label>
                         Num clusters
-                        <Input variant='outline' onChange={({ target }) => setNcluster(target.value)} placeholder='n clusters' value={ncluster} />
+                        <Input variant='outline' onChange={({ target }) => setNcluster(parseInt(target.value))} placeholder='n clusters' value={ncluster} />
                     </label>
                     <br />
                     {labels.length > 0 && <><label>
@@ -221,9 +234,11 @@ export default function features() {
                     }
                     <br />
                     <div className='clearfix' />
-                    <Button mt='5' isLoading={!features} loadingText='Processing, loading features...' onClick={() => onClustering()} colorScheme='green' variant='outline'>
-                        Build cluster graph
+                    <Button mt='5' mb='5' isLoading={!features} loadingText='Processing, loading features...' onClick={() => onClustering()} colorScheme='green' variant='outline'>
+                        Select features & Build cluster graph
                     </Button>
+                    <div className='clearfix' />
+                    <label><i>You can select the features from the bottom</i></label>
                 </Container>
             </Box>
 
@@ -238,7 +253,7 @@ export default function features() {
                 })}
             </Container>}
 
-            <Container minW='container.lg'>
+            <Container mt='5' minW='container.lg'>
                 <Accordion defaultIndex={[0]} allowMultiple>
                     <AccordionItem>
                         <h2>
@@ -254,8 +269,9 @@ export default function features() {
                                 {data.map((timeserie, i) => {
                                     return (
                                         <Box key={i}>
-                                            <Card>
+                                            <Card className={(clustering) ? `cluster-${clustering.data[i]}` : null}>
                                                 <CardHeader>
+                                                    {clustering && <label>Cluster {clustering.data[i]}</label>}
                                                     <Input value={labels[i] ? labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
                                                 </CardHeader>
                                                 <CardBody>

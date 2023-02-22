@@ -111,8 +111,72 @@ a {
   left: 0;
   z-index: 1;
   background: #fff;
+  color: #222;
 }
 
 .clearfix {
   clear: both;
+}
+
+.cluster-0 {
+  border: 1px solid red;
+}
+
+.cluster-1 {
+  border: 1px solid green;
+}
+
+.cluster-2 {
+  border: 1px solid greenyellow;
+}
+
+.cluster-3 {
+  border: 1px solid yellow;
+}
+
+.cluster-4 {
+  border: 1px solid blue;
+}
+
+.cluster-5 {
+  border: 1px solid violet;
+}
+
+.cluster-6 {
+  border: 1px solid blueviolet;
+}
+
+.cluster-7 {
+  border: 1px solid fuchsia;
+}
+
+.cluster-8 {
+  border: 1px solid tan;
+}
+
+.cluster-9 {
+  border: 1px solid teal;
+}
+
+.cluster-10 {
+  border: 1px solid skyblue;
+}
+
+.cluster-11 {
+  border: 1px solid aquamarine;
+}
+.cluster-12 {
+  border: 1px solid indianred;
+}
+
+.cluster-13 {
+  border: 1px solid indigo;
+}
+
+.cluster-14 {
+  border: 1px solid pink;
+}
+
+.cluster-15 {
+  border: 1px solid lightcoral;
 }
