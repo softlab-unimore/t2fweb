@@ -3,7 +3,7 @@ import { Chart as ChartJS, registerables } from 'chart.js/auto';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { Chart, Line } from 'react-chartjs-2';
 
-const LineChart = React.memo(({ timeserie, clickHandler }) => {
+const LineChart = React.memo(({ timeserie, clickHandler, legendDisplayed }) => {
   if (timeserie.length === 0) return;
 
   useEffect(() => {
@@ -83,7 +83,28 @@ const LineChart = React.memo(({ timeserie, clickHandler }) => {
         }
       },
       legend: {
-        display: false
+        display: legendDisplayed,
+        onClick: function(e, legendItem) {
+          var index = legendItem.datasetIndex;
+          var ci = this.chart;
+          var alreadyHidden = (ci.getDatasetMeta(index).hidden === null) ? false : ci.getDatasetMeta(index).hidden;
+
+          ci.data.datasets.forEach(function(e, i) {
+            var meta = ci.getDatasetMeta(i);
+
+            if (i !== index) {
+              if (!alreadyHidden) {
+                meta.hidden = meta.hidden === null ? !meta.hidden : null;
+              } else if (meta.hidden === null) {
+                meta.hidden = true;
+              }
+            } else if (i === index) {
+              meta.hidden = null;
+            }
+          });
+
+          ci.update();
+        },
       },
       title: {
         display: false,

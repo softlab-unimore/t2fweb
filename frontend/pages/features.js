@@ -275,7 +275,7 @@ export default function features() {
                                                     <Input value={labels[i] ? labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
                                                 </CardHeader>
                                                 <CardBody>
-                                                    <LineChart clickHandler={handleModalChart} timeserie={timeserie} />
+                                                    <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} />
                                                 </CardBody>
                                             </Card>
                                         </Box>
@@ -350,7 +350,7 @@ export default function features() {
                 <ModalHeader />
                 <ModalCloseButton />
                 <ModalBody>
-                    <LineChart timeserie={modalTimeserie} />
+                    <LineChart legendDisplayed={true} timeserie={modalTimeserie} />
                 </ModalBody>
                 <ModalFooter>
                     <Button colorScheme='green' mr={3} onClick={onClose}>
