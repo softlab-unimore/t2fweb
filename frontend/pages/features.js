@@ -47,7 +47,6 @@ import handleSelect from '../utils/select';
 import handleClustering from '../utils/clustering';
 import handleEvaluation from '../utils/evalutation';
 import handleSplit from '../utils/split';
-import BarsChart from '../components/BarChart';
 
 import { useRecoilState } from 'recoil';
 import { baseState, labelState, featuresState, featuresSelectedState, selectState, clusteringState } from '../state/index';
@@ -141,7 +140,12 @@ export default function features() {
     };
 
     const onClustering = () => {
+        if (labels?.length > 0) {
+            handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data));
+        }
+
         updateSelectedFeatures();
+
         if (select) {
             const labelTrainData = (Object.values(labelTrain).length > 0) ? labelTrain : null;
             handleClustering(select, ncluster, modelType, transformType, labelTrainData, (d) => {
@@ -201,7 +205,11 @@ export default function features() {
                             colorScheme='green'
                             onChange={(val) => setSliderValue(val)} 
                             onMouseEnter={() => setShowTooltip(true)}
-                            onMouseLeave={() => setShowTooltip(false)}
+                            onMouseLeave={() => {
+                                setShowTooltip(false);
+                                handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data));
+                            }}
+                            onBlur={() => handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data))}
                         >
                             <SliderMark value={25} mt='2' ml='-2.5' fontSize='sm'>
                             25%
@@ -227,14 +235,11 @@ export default function features() {
                             </Tooltip>
                         </Slider>
                     </label>
-                    <Button onClick={() => handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data))} mt='5'>
-                        Update train size
-                    </Button>
                     </>
                     }
                     <br />
                     <div className='clearfix' />
-                    <Button mt='5' mb='5' isLoading={!features} loadingText='Processing, loading features...' onClick={() => onClustering()} colorScheme='green' variant='outline'>
+                    <Button mt='6' mb='5' isLoading={!features} loadingText='Processing, loading features...' onClick={() => onClustering()} colorScheme='green' variant='outline'>
                         Select features & Build cluster graph
                     </Button>
                     <div className='clearfix' />
