@@ -23,7 +23,7 @@ export default function CallToActionWithAnnotation() {
 
     const onUploadCallback = (data) => {
         setTimeseries(data);
-        setLabels(data.labels);
+        setLabels(data.rawLabels);
         router.push('/features');
     };
 

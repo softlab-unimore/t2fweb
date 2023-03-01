@@ -16,7 +16,7 @@ export default function handleSelect(ts_feat, model_type, transform_type, labels
         data: data,
     }).then((r) => {
         const response = r.data;
-        response.serverData = response;
+        response.serverData = {...r.data};
         if (response.length > 0) {
             response.data = r.data.slice(0, 15);
         }

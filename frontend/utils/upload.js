@@ -16,13 +16,11 @@ export default function handleUpload(files, callback) {
         data: fd
     }).then((r) => {
         const response = r.data;
-        response.serverData = response.data;
+        response.serverData = {...r.data};
         response.data = (response.data.length > 0) ? response.data.slice(0, 15) : [];
+        response.rawLabels = [...response.labels];
         if (response.labels.length > 0) {
             response.labels.slice(0, 15);
-        } else {
-            // response.labels = response.data.map((v, i) => `Timeserie ${i+1}`);
-            response.serverData.labels = response.serverData.map((v, i) => `Timeserie ${i+1}`);
         }
 
         callback(response);

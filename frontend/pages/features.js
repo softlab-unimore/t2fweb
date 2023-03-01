@@ -78,7 +78,7 @@ export default function features() {
 
     useEffect(() => {
         if (serverData !== undefined && !featureRequestSent) {
-            handleExtraction(serverData, 100, 2, (extractionData) => {
+            handleExtraction(serverData.data, 100, 2, (extractionData) => {
                 setFeatures((old) => {
                     return {
                         ...old,
@@ -128,7 +128,7 @@ export default function features() {
     const updateSelectedFeatures = () => {
         if (Object.keys(featuresSelected).length === 0) return 0;
         const enabledFeatures = Object.keys(featuresSelected).filter((k) => featuresSelected[k]);
-        let requestFeatures = features.data;
+        let requestFeatures = [...Object.values(features.serverData)];
         if (enabledFeatures.length !== Object.keys(featuresSelected).length) {
             requestFeatures.map((timeserieFeats) => {
                 return Object.fromEntries(Object.entries(timeserieFeats).filter((k) => enabledFeatures.includes(k[0])));
@@ -151,7 +151,7 @@ export default function features() {
             handleClustering(select, ncluster, modelType, transformType, labelTrainData, (d) => {
                 setClusteringState(d);
                 if (labels.length > 0) {
-                    handleEvaluation(d.data, labels.slice(0, 15), setEvaluation);
+                    handleEvaluation(d.data, labels, setEvaluation);
                 }
             });
         }
@@ -199,7 +199,7 @@ export default function features() {
                         <Input variant='outline' onChange={({ target }) => setNcluster(parseInt(target.value))} placeholder='n clusters' value={ncluster} />
                     </label>
                     <br />
-                    {labels.length > 0 && <><label>
+                    {serverData?.labels.length > 0 && <><label>
                         Train size
                         <Slider
                             colorScheme='green'

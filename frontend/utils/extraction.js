@@ -12,7 +12,7 @@ export default function handleExtraction(ts_list, batch_size=100, p=2, callback)
     }).then((r) => {
         const response = r.data;
 
-        response.serverData = response;
+        response.serverData = {...r.data};
         if (response.length > 0) {
             response.data = r.data.slice(0, 15);
             response.data[0] = response.data[0] || {};
