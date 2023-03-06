@@ -52,7 +52,7 @@ const LineChart = React.memo(({ timeserie, clickHandler, legendDisplayed }) => {
           drawOnChartArea: false
         },
         ticks: {
-          display: false
+          display: true
         }
       }
     },

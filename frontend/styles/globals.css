@@ -180,3 +180,14 @@ a {
 .cluster-15 {
   border: 1px solid lightcoral;
 }
+
+.timeserie-container-panel {
+  max-height: 1500px;
+  overflow-y: auto;
+}
+
+.features-container-panel {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}

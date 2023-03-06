@@ -58,12 +58,13 @@ const LineChart = dynamic(() => import("../components/LineChart"), {
 })
 
 export default function features() {
-    const [{ data, serverData }, setBaseState] = useRecoilState(baseState);
+    const [{ labels: shortLabel, data, serverData }, setBaseState] = useRecoilState(baseState);
     const [labels, setLabels] = useRecoilState(labelState);
     const [{ features, featureRequestSent }, setFeatures] = useRecoilState(featuresState);
     const [featuresSelected, setFeaturesSelected] = useRecoilState(featuresSelectedState);
     const [select, setSelectState] = useRecoilState(selectState);
     const [clustering, setClusteringState] = useRecoilState(clusteringState);
+    const [dataToVisualize, setDataToVisualize] = useState({ data: [], labels: [] });
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [modalTimeserie, setModalTimeserie] = useState([]);
@@ -78,26 +79,8 @@ export default function features() {
 
     useEffect(() => {
         if (serverData !== undefined && !featureRequestSent) {
-            handleExtraction(serverData.data, 100, 2, (extractionData) => {
-                setFeatures((old) => {
-                    return {
-                        ...old,
-                        features: extractionData,
-                        featureRequestSent: true
-                    }
-                });
-
-                if (labels.length > 0) {
-                    handleSplit(labels, trainSizeValue/100, (d) => {
-                        setLabelTrain(d.data);
-                        console.log(d.data);
-                    });
-                }
-
-                setFeaturesSelected(() => {
-                    return Object.assign({}, ...extractionData.featuresSelected);
-                });
-            });
+            setDataToVisualize({ labels: shortLabel, data: data });
+            doExtraction();
         }
     }, []);
 
@@ -106,6 +89,30 @@ export default function features() {
             updateSelectedFeatures();
         }
     }, [features])
+
+    const doExtraction = () => {
+        setFeatures({ features: null });
+        handleExtraction(serverData.data, 100, 2, (extractionData) => {
+            setFeatures((old) => {
+                return {
+                    ...old,
+                    features: extractionData,
+                    featureRequestSent: true
+                }
+            });
+
+            if (labels.length > 0) {
+                handleSplit(labels, trainSizeValue/100, (d) => {
+                    setLabelTrain(d.data);
+                    console.log(d.data);
+                });
+            }
+
+            setFeaturesSelected(() => {
+                return Object.assign({}, ...extractionData.featuresSelected);
+            });
+        });
+    };
 
     const onChangeLabel = (e, i) => {
         const newLabels = [...labels];
@@ -135,8 +142,8 @@ export default function features() {
             })
         }
 
-        const labelTrainData = (Object.values(labelTrain).length > 0) ? Object.fromEntries(Object.entries(labelTrain).filter((k) => k[0] <= 14)) : null;
-        handleSelect(requestFeatures, modelType, transformType, labelTrainData, (data) => setSelectState(data));
+        const labelTrainData = (Object.values(labelTrain).length > 0) ? Object.fromEntries(Object.entries(labelTrain).filter((k) => k[0] <= dataToVisualize.labels.length-1)) : null;
+        handleSelect(requestFeatures, modelType, transformType, labelTrainData, (data) => setSelectState(data), dataToVisualize.labels.length);
     };
 
     const onClustering = () => {
@@ -253,7 +260,7 @@ export default function features() {
                 {Object.keys(evaluation).map((v) => {
                     return (<label>
                         {v}
-                        <Progress colorScheme='green' size='md' value={evaluation[v]*100} />
+                        <Progress title={`${evaluation[v]*100}%`} colorScheme='green' size='md' value={evaluation[v]*100} />
                     </label>)
                 })}
             </Container>}
@@ -266,18 +273,32 @@ export default function features() {
                                 <Box as="span" flex='1' textAlign='left'>
                                     Timeseries
                                 </Box>
+                                {shortLabel.length != labels.length && dataToVisualize.labels.length != labels.length && <Box as='span' flex='1' textAlign='right'>
+                                    <Button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setDataToVisualize({ labels: labels, data: serverData.data });
+                                            doExtraction();
+                                        }}
+                                        colorScheme='green'
+                                        variant='outline'
+                                        isLoading={!features} loadingText='Processing'
+                                    >
+                                        Show all
+                                    </Button>
+                                </Box>}
                                 <AccordionIcon />
                             </AccordionButton>
                         </h2>
-                        <AccordionPanel pb={4}>
-                            <SimpleGrid columns={Math.ceil(data.length / 6)} spacing={5}>
-                                {data.map((timeserie, i) => {
+                        <AccordionPanel className='timeserie-container-panel' pb={4}>
+                            <SimpleGrid columns={3} spacing={5}>
+                                {dataToVisualize.data.map((timeserie, i) => {
                                     return (
                                         <Box key={i}>
                                             <Card className={(clustering) ? `cluster-${clustering.data[i]}` : null}>
                                                 <CardHeader>
                                                     {clustering && <label>Cluster {clustering.data[i]}</label>}
-                                                    <Input value={labels[i] ? labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
+                                                    <Input value={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
                                                 </CardHeader>
                                                 <CardBody>
                                                     <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} />
@@ -298,7 +319,7 @@ export default function features() {
                                 <AccordionIcon />
                             </AccordionButton>
                         </h2>
-                        <AccordionPanel pb={4}>
+                        <AccordionPanel className='features-container-panel' pb={4}>
                             {features && features.data !== undefined && features.data.length > 0 && <TableContainer>
                                 <Table size='sm' variant='striped' colorScheme='green'>
                                     <Thead>
@@ -319,11 +340,11 @@ export default function features() {
                                     </Tr>
                                     </Thead>
                                     <Tbody>
-                                    {features.data.map((v, k) => {
+                                    {features.data.slice(0, dataToVisualize.labels.length).map((v, k) => {
                                         return (
                                             <Tr>
                                                 <Td className='sticky-column'>
-                                                    {labels[k] ? labels[k] : `Timeserie ${k}`}
+                                                    {dataToVisualize.labels[k] ? dataToVisualize.labels[k] : `Timeserie ${k}`}
                                                 </Td>
                                                 {Object.values(v).slice(0, 40).map((feat) => <Td isNumeric>{feat.toFixed(2)}</Td>)}
                                             </Tr>

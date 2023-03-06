@@ -1,9 +1,11 @@
+import React, { useState } from 'react';
 import {
     Box,
     Heading,
     Container,
     Text,
     Stack,
+    Input,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 
@@ -17,8 +19,9 @@ export default function CallToActionWithAnnotation() {
     const router = useRouter();
     const setTimeseries = useSetRecoilState(baseState);
     const setLabels = useSetRecoilState(labelState);
+    const [nClass, setNClass] = useState(null);
     const onDrop = (files) => {
-        handleUpload(files, onUploadCallback);
+        handleUpload(files, onUploadCallback, nClass);
     }
 
     const onUploadCallback = (data) => {
@@ -49,6 +52,7 @@ export default function CallToActionWithAnnotation() {
                         Start the demo by uploading your csv file.<br />
                         You can upload the file with/without labels
                     </Text>
+                    <Input alignSelf='center' maxW='sm' placeholder='N timeserie per class to view, 0 => all' value={nClass} onChange={(e) => setNClass(e.target.value)} />
                     <Stack
                         direction={'column'}
                         spacing={3}

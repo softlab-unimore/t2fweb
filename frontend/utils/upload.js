@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL, READER_ENDPOINT } from '../constants/config';
 
-export default function handleUpload(files, callback) {
+export default function handleUpload(files, callback, nClass = 0) {
     let fd = new FormData();
     files.map((file) => {
         fd.append('file', file);
@@ -17,10 +17,23 @@ export default function handleUpload(files, callback) {
     }).then((r) => {
         const response = r.data;
         response.serverData = {...r.data};
-        response.data = (response.data.length > 0) ? response.data.slice(0, 15) : [];
         response.rawLabels = [...response.labels];
-        if (response.labels.length > 0) {
-            response.labels.slice(0, 15);
+        if (response.labels.length > 0 && nClass > 0) {
+            const counterObj = {};
+            const dataToVisualize = [];
+            const labelsToVisualize = [];
+
+            response.labels.forEach((l, i) => {
+                counterObj[l] = counterObj[l] || 0;
+                if (counterObj[l] < nClass) {
+                    counterObj[l] += 1;
+                    dataToVisualize.push(response.data[i]);
+                    labelsToVisualize.push(l);
+                }
+            })
+            
+            response.data = dataToVisualize;
+            response.labels = labelsToVisualize;
         }
 
         callback(response);
