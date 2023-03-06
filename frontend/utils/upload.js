@@ -36,6 +36,8 @@ export default function handleUpload(files, callback, nClass = 0) {
             response.labels = labelsToVisualize;
         }
 
+        localStorage.setItem('timeseries_data', JSON.stringify(response));
+
         callback(response);
     }).catch((e) => {
         console.log(e);

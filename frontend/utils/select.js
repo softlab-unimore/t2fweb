@@ -18,7 +18,7 @@ export default function handleSelect(ts_feat, model_type, transform_type, labels
         const response = r.data;
         response.serverData = {...r.data};
         if (response.length > 0) {
-            response.data = r.data.slice(0, nSlice);
+            response.data = r.data;
         }
         console.log(response)
         callback(response);

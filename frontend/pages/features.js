@@ -117,11 +117,23 @@ export default function features() {
     const onChangeLabel = (e, i) => {
         const newLabels = [...labels];
         newLabels[i] = e.target.value;
+
+        const newDataToVisualizeLabels = [...dataToVisualize.labels];
+        newDataToVisualizeLabels[i] = e.target.value;
+
         setLabels(() => {
             return [
                 ...newLabels,
             ]
         })
+
+        setDataToVisualize(() => {
+            return {
+                data: dataToVisualize.data,
+                labels: newDataToVisualizeLabels,
+            }
+        });
+
     }
 
     const onFeatureCheck = (e, i) => {
@@ -147,7 +159,7 @@ export default function features() {
     };
 
     const onClustering = () => {
-        if (labels?.length > 0) {
+        if (labels && labels.length > 0) {
             handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data));
         }
 
@@ -214,9 +226,11 @@ export default function features() {
                             onMouseEnter={() => setShowTooltip(true)}
                             onMouseLeave={() => {
                                 setShowTooltip(false);
-                                handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data));
+                                if (labels.length > 0) {
+                                    handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data));
+                                }
                             }}
-                            onBlur={() => handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data))}
+                            onBlur={() => (labels.length > 0) ? handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data)) : null}
                         >
                             <SliderMark value={25} mt='2' ml='-2.5' fontSize='sm'>
                             25%
@@ -260,7 +274,7 @@ export default function features() {
                 {Object.keys(evaluation).map((v) => {
                     return (<label>
                         {v}
-                        <Progress title={`${evaluation[v]*100}%`} colorScheme='green' size='md' value={evaluation[v]*100} />
+                        <Progress title={`${evaluation[v]*100}%`} colorScheme='green' size='md' value={(evaluation[v]*100).toFixed(0)} />
                     </label>)
                 })}
             </Container>}
