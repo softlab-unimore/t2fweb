@@ -1,10 +1,11 @@
 import requests
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 
-def scenario(semisupervised: bool = False):
+def scenario(semisupervised: bool = False, analytics: bool = False):
     """ Scenario1&2: Multivariate Time Series Dataset with Label and Unsupervised or Semi Supervised Clustering """
     # Read multivariate time series dataset request
     filename = 'data/BasicMotionsLabel.txt'  # Dataset file path
@@ -49,6 +50,36 @@ def scenario(semisupervised: bool = False):
         metrics = r.json()
         print(metrics)
 
+    # Analytics requests
+    if analytics:
+        # Ranking based on pivot
+        pivot_idx = 0
+        payload = {'preds': preds, 'data': ts_feats, 'idx': pivot_idx}
+        r = requests.post('http://localhost:5000/ranking', json=payload)
+        res = r.json()
+        ts_feats_ranked = res['data']
+        preds_ranked = res['preds']
+
+        # Show top 3 time series respect to pivot_idx
+        df = pd.DataFrame(ts_feats_ranked)
+        df['Label'] = preds_ranked
+
+        print(f'\nRanking for idx: {pivot_idx}')
+        print(f'Pivot: {pd.DataFrame([ts_feats[pivot_idx]])}')
+        print(df.head(3))
+
+        # TSNE visualization
+        payload = {'data': ts_feats}
+        r = requests.post('http://localhost:5000/tsne', json=payload)
+        ts_tsne = r.json()
+
+        # Show tsne coordinates with scatter plot
+        df_tsne = pd.DataFrame(ts_tsne)
+        df_tsne['Label'] = preds
+
+        df_tsne.plot.scatter(x='X', y='Y', c='Label', colormap='viridis')
+        plt.show()
+
 
 if __name__ == '__main__':
-    scenario(semisupervised=True)
+    scenario(semisupervised=True, analytics=True)

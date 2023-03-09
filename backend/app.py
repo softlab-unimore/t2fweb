@@ -6,6 +6,8 @@ import json
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.manifold import TSNE
 
 from .reader import read_mts
 from .t2f.extractor import feature_extraction
@@ -172,6 +174,79 @@ def evaluation_post():
     metrics = cluster_metrics(labels, preds)
 
     return jsonify(metrics)
+
+
+@cross_origin()
+@app.post('/ranking')
+def ranking_pivot_post():
+    pos_idx = request.json.get('idx', None)  # Positional index of record in ts_feats to use like pivot
+    ts_feats = request.json.get('data', [])  # List of transformed time series
+    preds = request.json.get('preds', [])  # Model prediction
+
+    # Missing params
+    if pos_idx is None or not ts_feats or not preds:
+        abort(400, 'Missing arguments: idx, data, and/or preds')
+
+    # Create pandas dataframe
+    ts_feats = pd.DataFrame(ts_feats)
+
+    if pos_idx >= len(ts_feats):
+        abort(400, 'Positional index is out of bounds respect to the dataset')
+
+    # Select the pivot record
+    ts_pivot = ts_feats.iloc[[pos_idx]]
+    # Remove pivot from the dataset and the prediction array
+    ts_feats = ts_feats.drop(ts_feats.index[pos_idx], axis=0)
+    preds.pop(pos_idx)
+
+    # Compute ranking based on euclidean distances
+    ranks = euclidean_distances(ts_pivot.values, ts_feats.values)
+    ranks = np.argsort(ranks[0, :])
+
+    # Create a numpy array for an easy selection
+    preds = np.array(preds)
+
+    # Order dataset and prediction based on ranking order
+    preds = preds[ranks]
+    ts_feats = ts_feats.iloc[ranks]
+
+    # Transform dataframe into json object
+    ts_feats = ts_feats.to_json(orient='records')
+    ts_feats = json.loads(ts_feats)
+
+    # Transform preds into list
+    preds = preds.tolist()
+
+    res = {
+        'data': ts_feats,
+        'preds': preds,
+    }
+
+    return jsonify(res)
+
+
+@cross_origin()
+@app.post('/tsne')
+def tsne_post():
+    ts_feats = request.json.get('data', [])  # List of transformed time series
+
+    # Missing params
+    if not ts_feats:
+        abort(400, 'Missing data argument')
+
+    # Create pandas dataframe
+    ts_feats = pd.DataFrame(ts_feats)
+
+    # TSNE X and Y coordinates
+    tsne = TSNE(learning_rate='auto', init='pca', n_iter=1000)
+    arr = tsne.fit_transform(ts_feats)
+    df_tsne = pd.DataFrame({'X': arr[:, 0], 'Y': arr[:, 1]})
+
+    # Transform dataframe into json object
+    df_tsne = df_tsne.to_json(orient='records')
+    df_tsne = json.loads(df_tsne)
+
+    return jsonify(df_tsne)
 
 
 if __name__ == '__main__':
