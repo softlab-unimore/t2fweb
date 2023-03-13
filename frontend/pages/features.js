@@ -67,7 +67,7 @@ export default function features() {
     const [dataToVisualize, setDataToVisualize] = useState({ data: [], labels: [] });
 
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const [modalTimeserie, setModalTimeserie] = useState([]);
+    const [modalTimeserie, setModalTimeserie] = useState({timeserie: [], title: null});
 
     const [labelTrain, setLabelTrain] = useState([]);
 
@@ -96,7 +96,7 @@ export default function features() {
             setFeatures((old) => {
                 return {
                     ...old,
-                    features: extractionData,
+                    features: [...Object.values(extractionData.serverData)],
                     featureRequestSent: true
                 }
             });
@@ -145,9 +145,10 @@ export default function features() {
     }
 
     const updateSelectedFeatures = () => {
+        console.log('feat', features);
         if (Object.keys(featuresSelected).length === 0) return 0;
         const enabledFeatures = Object.keys(featuresSelected).filter((k) => featuresSelected[k]);
-        let requestFeatures = [...Object.values(features.serverData)];
+        let requestFeatures = [...Object.values(features)];
         if (enabledFeatures.length !== Object.keys(featuresSelected).length) {
             requestFeatures.map((timeserieFeats) => {
                 return Object.fromEntries(Object.entries(timeserieFeats).filter((k) => enabledFeatures.includes(k[0])));
@@ -163,7 +164,7 @@ export default function features() {
             handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data));
         }
 
-        updateSelectedFeatures();
+        // updateSelectedFeatures();
 
         if (select) {
             const labelTrainData = (Object.values(labelTrain).length > 0) ? labelTrain : null;
@@ -176,8 +177,8 @@ export default function features() {
         }
     };
 
-    const handleModalChart = (timeserie) => {
-        setModalTimeserie(timeserie);
+    const handleModalChart = (timeserie, title) => {
+        setModalTimeserie({timeserie: timeserie, title: title});
         onOpen();
     };
 
@@ -274,7 +275,7 @@ export default function features() {
                 {Object.keys(evaluation).map((v) => {
                     return (<label>
                         {v}
-                        <Progress title={`${evaluation[v]*100}%`} colorScheme='green' size='md' value={(evaluation[v]*100).toFixed(0)} />
+                        <Progress title={`${(evaluation[v]*100).toFixed(0)}%`} colorScheme='green' size='md' value={(evaluation[v]*100).toFixed(0)} />
                     </label>)
                 })}
             </Container>}
@@ -315,7 +316,7 @@ export default function features() {
                                                     <Input value={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
                                                 </CardHeader>
                                                 <CardBody>
-                                                    <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} />
+                                                    <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} title={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : ''} />
                                                 </CardBody>
                                             </Card>
                                         </Box>
@@ -334,7 +335,7 @@ export default function features() {
                             </AccordionButton>
                         </h2>
                         <AccordionPanel className='features-container-panel' pb={4}>
-                            {features && features.data !== undefined && features.data.length > 0 && <TableContainer>
+                            {features && features !== undefined && features.length && <TableContainer>
                                 <Table size='sm' variant='striped' colorScheme='green'>
                                     <Thead>
                                     <Tr>
@@ -343,7 +344,7 @@ export default function features() {
                                                 Update selection
                                             </Button>
                                         </Th>
-                                        {Object.keys(features.data[0]).slice(0, 40).map((k) => {
+                                        {Object.keys(features[0]).slice(0, 40).map((k) => {
                                             return (
                                                 <Th isNumeric>
                                                     <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
@@ -354,7 +355,7 @@ export default function features() {
                                     </Tr>
                                     </Thead>
                                     <Tbody>
-                                    {features.data.slice(0, dataToVisualize.labels.length).map((v, k) => {
+                                    {features.slice(0, 40).map((v, k) => {
                                         return (
                                             <Tr>
                                                 <Td className='sticky-column'>
@@ -368,7 +369,7 @@ export default function features() {
                                     <Tfoot>
                                     <Tr>
                                         <Th></Th>
-                                        {Object.keys(features.data[0]).slice(0, 40).map((k) => {
+                                        {Object.keys(features[0]).slice(0, 40).map((k) => {
                                             return (
                                                 <Th isNumeric>
                                                     <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
@@ -390,7 +391,8 @@ export default function features() {
                 <ModalHeader />
                 <ModalCloseButton />
                 <ModalBody>
-                    <LineChart legendDisplayed={true} timeserie={modalTimeserie} />
+                    <h2>{modalTimeserie.title}</h2>
+                    <LineChart legendDisplayed={true} timeserie={modalTimeserie.timeserie} />
                 </ModalBody>
                 <ModalFooter>
                     <Button colorScheme='green' mr={3} onClick={onClose}>
