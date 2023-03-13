@@ -200,8 +200,8 @@ def ranking_pivot_post():
     preds.pop(pos_idx)
 
     # Compute ranking based on euclidean distances
-    ranks = euclidean_distances(ts_pivot.values, ts_feats.values)
-    ranks = np.argsort(ranks[0, :])
+    dist = euclidean_distances(ts_pivot.values, ts_feats.values)
+    ranks = np.argsort(dist[0, :])
 
     # Create a numpy array for an easy selection
     preds = np.array(preds)
@@ -209,6 +209,14 @@ def ranking_pivot_post():
     # Order dataset and prediction based on ranking order
     preds = preds[ranks]
     ts_feats = ts_feats.iloc[ranks]
+
+    # Insert distance and position column in dataset
+    columns = list(ts_feats.columns)
+    ts_feats['DISTANCE'] = dist[0, :]
+    ts_feats['IDX'] = ts_feats.index
+
+    columns = ['IDX', 'DISTANCE'] + columns
+    ts_feats = ts_feats[columns]
 
     # Transform dataframe into json object
     ts_feats = ts_feats.to_json(orient='records')
