@@ -3,7 +3,7 @@ import { Chart as ChartJS, registerables } from 'chart.js/auto';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { Chart, Line } from 'react-chartjs-2';
 
-const LineChart = React.memo(({ timeserie, clickHandler, legendDisplayed, title }) => {
+const LineChart = React.memo(({ timeserie, clickHandler, legendDisplayed, title, index }) => {
   if (timeserie.length === 0) return;
 
   useEffect(() => {
@@ -112,7 +112,7 @@ const LineChart = React.memo(({ timeserie, clickHandler, legendDisplayed, title 
     },
   };
 
-  return <Line onClick={() => typeof (clickHandler) === 'function' ? clickHandler(timeserie, title) : null} options={options} data={data} />;
+  return <Line onClick={() => typeof (clickHandler) === 'function' ? clickHandler(timeserie, title, index) : null} options={options} data={data} />;
 })
 
 export default LineChart;

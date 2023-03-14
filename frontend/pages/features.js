@@ -47,6 +47,7 @@ import handleSelect from '../utils/select';
 import handleClustering from '../utils/clustering';
 import handleEvaluation from '../utils/evalutation';
 import handleSplit from '../utils/split';
+import handleRanking from '../utils/ranking';
 
 import { useRecoilState } from 'recoil';
 import { baseState, labelState, featuresState, featuresSelectedState, selectState, clusteringState } from '../state/index';
@@ -70,6 +71,7 @@ export default function features() {
     const [modalTimeserie, setModalTimeserie] = useState({timeserie: [], title: null});
 
     const [labelTrain, setLabelTrain] = useState([]);
+    const [ranking, setRanking] = useState([]);
 
     const [evaluation, setEvaluation] = useState(undefined);
     const [ncluster, setNcluster] = useState(4);
@@ -177,9 +179,12 @@ export default function features() {
         }
     };
 
-    const handleModalChart = (timeserie, title) => {
+    const handleModalChart = (timeserie, title, index) => {
         setModalTimeserie({timeserie: timeserie, title: title});
         onOpen();
+        if (clustering) {
+            handleRanking(select, index, clustering.data, (d) => setRanking(d));
+        }
     };
 
     return (
@@ -316,7 +321,7 @@ export default function features() {
                                                     <Input value={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
                                                 </CardHeader>
                                                 <CardBody>
-                                                    <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} title={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : ''} />
+                                                    <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} title={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Timeserie ${i + 1}`} index={i} />
                                                 </CardBody>
                                             </Card>
                                         </Box>
@@ -385,14 +390,50 @@ export default function features() {
                     </AccordionItem>
                 </Accordion>
             </Container>
-            <Modal isOpen={isOpen} size='full' onClose={onClose}>
+            <Modal isOpen={isOpen} onop size='full' onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
                 <ModalHeader />
                 <ModalCloseButton />
                 <ModalBody>
-                    <h2>{modalTimeserie.title}</h2>
+                    <Box textAlign="center">
+                        <h1>{modalTimeserie.title?.toUpperCase()}</h1>
+                    </Box>
                     <LineChart legendDisplayed={true} timeserie={modalTimeserie.timeserie} />
+                    
+                    {ranking && 
+                    <TableContainer>
+                        <Table size='sm' variant='striped' colorScheme='green'>
+                            <Thead>
+                            <Tr>
+                                <Th>Timeserie</Th>
+                                <Th>Feat 1</Th>
+                                <Th>Feat 2</Th>
+                                <Th>Distance</Th>
+                                <Th>Label</Th>
+                            </Tr>
+                            </Thead>
+                            <Tbody>
+                            {ranking?.data && ranking.data.slice(0, 3).map((v, k) => {
+                                return (
+                                    <Tr>
+                                        <Td>
+                                            {dataToVisualize.labels[v['IDX']] ? dataToVisualize.labels[v['IDX']] : `Timeserie ${v['IDX']}`}
+                                        </Td>
+                                        <Td>{Object.values(v)[2]}</Td>
+                                        <Td>{Object.values(v)[3]}</Td>
+                                        <Td>
+                                            {v['DISTANCE']}
+                                        </Td>
+                                        <Td>
+                                            {ranking.preds[k]}
+                                        </Td>
+                                    </Tr>
+                                )
+                            })}
+                            </Tbody>
+                        </Table>
+                    </TableContainer>}
                 </ModalBody>
                 <ModalFooter>
                     <Button colorScheme='green' mr={3} onClick={onClose}>

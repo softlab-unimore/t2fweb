@@ -16,9 +16,7 @@ export default function handleCluster(ts_feat, n_clusters=4, model_type='Hierarc
         data: data
     }).then((r) => {
         const response = {};
-        response.serverData = {...r.data};
         response.data = r.data;
-        console.log(response)
         callback(response);
     }).catch((e) => {
         console.log(e);
