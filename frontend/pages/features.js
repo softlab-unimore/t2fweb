@@ -406,27 +406,35 @@ export default function features() {
                         <Table size='sm' variant='striped' colorScheme='green'>
                             <Thead>
                             <Tr>
-                                <Th>Timeserie</Th>
-                                <Th>Feat 1</Th>
-                                <Th>Feat 2</Th>
+                                <Th>Timeseries</Th>
+                                {ranking?.data && 0 in ranking?.data ? Object.keys(ranking.data[0]).map((k) => {
+                                    if (k != 'DISTANCE' && k != 'IDX') {
+                                        return (<Th>{k.replace(/_|\d+/g, '')}</Th>);
+                                    }
+                                }) : null}
                                 <Th>Distance</Th>
                                 <Th>Label</Th>
                             </Tr>
                             </Thead>
                             <Tbody>
-                            {ranking?.data && ranking.data.slice(0, 3).map((v, k) => {
+                            {ranking?.data && ranking.data.map((v, k) => {
                                 return (
                                     <Tr>
                                         <Td>
                                             {dataToVisualize.labels[v['IDX']] ? dataToVisualize.labels[v['IDX']] : `Timeserie ${v['IDX']}`}
                                         </Td>
-                                        <Td>{Object.values(v)[2]}</Td>
-                                        <Td>{Object.values(v)[3]}</Td>
+                                        {Object.keys(v).map((k) => {
+                                            if (k != 'DISTANCE' && k != 'IDX') {
+                                                return (
+                                                    <Td>{v[k].toFixed(2)}</Td>
+                                                );
+                                            }
+                                        })}
                                         <Td>
-                                            {v['DISTANCE']}
+                                            {v['DISTANCE'].toFixed(2)}
                                         </Td>
                                         <Td>
-                                            {ranking.preds[k]}
+                                            {ranking.preds[k].toFixed(2)}
                                         </Td>
                                     </Tr>
                                 )
