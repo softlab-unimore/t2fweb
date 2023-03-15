@@ -72,6 +72,7 @@ export default function features() {
 
     const [labelTrain, setLabelTrain] = useState([]);
     const [ranking, setRanking] = useState([]);
+    const [unSelectedTS, setUnSelectedTS] = useState([]);
 
     const [evaluation, setEvaluation] = useState(undefined);
     const [ncluster, setNcluster] = useState(4);
@@ -108,57 +109,51 @@ export default function features() {
                     setLabelTrain(d.data);
                     console.log(d.data);
                 });
+            } else {
+                setFeaturesSelected({...Array(40).fill(false)});
+                setUnSelectedTS({...serverData.data})
             }
 
-            setFeaturesSelected(() => {
-                return Object.assign({}, ...extractionData.featuresSelected);
-            });
         });
     };
-
-    const onChangeLabel = (e, i) => {
-        const newLabels = [...labels];
-        newLabels[i] = e.target.value;
-
-        const newDataToVisualizeLabels = [...dataToVisualize.labels];
-        newDataToVisualizeLabels[i] = e.target.value;
-
-        setLabels(() => {
-            return [
-                ...newLabels,
-            ]
-        })
-
-        setDataToVisualize(() => {
-            return {
-                data: dataToVisualize.data,
-                labels: newDataToVisualizeLabels,
-            }
-        });
-
-    }
 
     const onFeatureCheck = (e, i) => {
         const newFeatures = {...featuresSelected};
         newFeatures[i] = e.target.checked;
         setFeaturesSelected((old) => {
             return newFeatures;
+        });
+        
+        const newUnSelectedTS = {...unSelectedTS};
+        if (e.target.checked) {
+            delete newUnSelectedTS[i];
+        } else {
+            newUnSelectedTS[i] = serverData.data[i];
+        }
+
+        setUnSelectedTS((old) => {
+            return {...newUnSelectedTS};
         })
     }
 
-    const updateSelectedFeatures = () => {
-        console.log('feat', features);
+    const updateSelectedFeatures = (callback=null) => {
         if (Object.keys(featuresSelected).length === 0) return 0;
-        const enabledFeatures = Object.keys(featuresSelected).filter((k) => featuresSelected[k]);
+        const enabledFeatures = Object.keys(featuresSelected);
         let requestFeatures = [...Object.values(features)];
-        if (enabledFeatures.length !== Object.keys(featuresSelected).length) {
-            requestFeatures.map((timeserieFeats) => {
-                return Object.fromEntries(Object.entries(timeserieFeats).filter((k) => enabledFeatures.includes(k[0])));
-            })
+        if (Object.keys(featuresSelected).filter((k) => featuresSelected[k]).length !== Object.keys(featuresSelected).length) {
+            enabledFeatures.map((k) => (!featuresSelected[k]) ? delete requestFeatures[k] : null);
+            requestFeatures = requestFeatures.filter((v) => v);
         }
 
-        const labelTrainData = (Object.values(labelTrain).length > 0) ? Object.fromEntries(Object.entries(labelTrain).filter((k) => k[0] <= dataToVisualize.labels.length-1)) : null;
-        handleSelect(requestFeatures, modelType, transformType, labelTrainData, (data) => setSelectState(data), dataToVisualize.labels.length);
+        if (requestFeatures.length > 0) {
+            const labelTrainData = (Object.values(labelTrain).length > 0) ? Object.fromEntries(Object.entries(labelTrain).filter((k) => k[0] <= dataToVisualize.labels.length-1)) : null;
+            handleSelect(requestFeatures, modelType, transformType, labelTrainData, (data) => {
+                setSelectState(data);
+                if (callback) {
+                    callback(data);
+                }
+            }, dataToVisualize.labels.length);
+        }
     };
 
     const onClustering = () => {
@@ -166,17 +161,16 @@ export default function features() {
             handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data));
         }
 
-        // updateSelectedFeatures();
-
-        if (select) {
+        updateSelectedFeatures((dataSelect) => {
             const labelTrainData = (Object.values(labelTrain).length > 0) ? labelTrain : null;
-            handleClustering(select, ncluster, modelType, transformType, labelTrainData, (d) => {
+            handleClustering(dataSelect, featuresSelected, ncluster, modelType, transformType, labelTrainData, (d) => {
                 setClusteringState(d);
                 if (labels.length > 0) {
-                    handleEvaluation(d.data, labels, setEvaluation);
+                    handleEvaluation(d, labels, setEvaluation);
                 }
             });
-        }
+        });
+
     };
 
     const handleModalChart = (timeserie, title, index) => {
@@ -315,10 +309,18 @@ export default function features() {
                                 {dataToVisualize.data.map((timeserie, i) => {
                                     return (
                                         <Box key={i}>
-                                            <Card className={(clustering) ? `cluster-${clustering.data[i]}` : null}>
+                                            <Card className={(clustering && Object.keys(unSelectedTS).indexOf(i) === -1) ? `cluster-${clustering.data[i]}` : null}>
                                                 <CardHeader>
-                                                    {clustering && <label>Cluster {clustering.data[i]}</label>}
-                                                    <Input value={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
+                                                    {serverData?.labels.length == 0 && <Checkbox
+                                                        style={{float: 'right'}}
+                                                        textAlign='right'
+                                                        onChange={(e) => onFeatureCheck(e, i)}
+                                                        isChecked={featuresSelected[i]}
+                                                        size='md'
+                                                        colorScheme='green'
+                                                    />}
+                                                    {clustering && <label><b>Cluster {clustering.data[i]}</b></label>}
+                                                    <Text>{dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Timeserie ${i + 1}`}</Text>
                                                 </CardHeader>
                                                 <CardBody>
                                                     <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} title={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Timeserie ${i + 1}`} index={i} />
@@ -344,15 +346,9 @@ export default function features() {
                                 <Table size='sm' variant='striped' colorScheme='green'>
                                     <Thead>
                                     <Tr>
-                                        <Th className='sticky-column'>
-                                            <Button onClick={updateSelectedFeatures} colorScheme='green' variant='outline'>
-                                                Update selection
-                                            </Button>
-                                        </Th>
                                         {Object.keys(features[0]).slice(0, 40).map((k) => {
                                             return (
                                                 <Th isNumeric>
-                                                    <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
                                                     &nbsp;{k.replace(/_|\d+/g, '')}
                                                 </Th>
                                             );
@@ -377,7 +373,6 @@ export default function features() {
                                         {Object.keys(features[0]).slice(0, 40).map((k) => {
                                             return (
                                                 <Th isNumeric>
-                                                    <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
                                                     &nbsp;{k.replace(/_|\d+/g, '')}
                                                 </Th>
                                             );
