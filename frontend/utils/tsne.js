@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { API_BASE_URL, TSNE_ENDPOINT } from '../constants/config';
 
-export default function handleTsne(ts_feat, callback) {
-    const data = {'data': ts_feat};
+export default function handleTsne(ts_feat, preds, callback) {
+    const data = {'data': ts_feat, 'preds': preds};
 
     axios(`${API_BASE_URL}${TSNE_ENDPOINT}`, {
         withCredentials: true,

@@ -74,7 +74,7 @@ export default function features() {
 
     const [labelTrain, setLabelTrain] = useState([]);
     const [ranking, setRanking] = useState([]);
-    const [tsne, setTsne] = useState({});
+    const [tsne, setTsne] = useState(null);
 
     const [evaluation, setEvaluation] = useState(undefined);
     const [ncluster, setNcluster] = useState(4);
@@ -169,7 +169,6 @@ export default function features() {
         }
 
         // updateSelectedFeatures();
-        handleTsne(select, (v) => setTsne(v));
 
         if (select) {
             const labelTrainData = (Object.values(labelTrain).length > 0) ? labelTrain : null;
@@ -178,6 +177,7 @@ export default function features() {
                 if (labels.length > 0) {
                     handleEvaluation(d.data, labels, setEvaluation);
                 }
+                handleTsne(select, d.data, (v) => setTsne(v));
             });
         }
     };
@@ -289,13 +289,24 @@ export default function features() {
             </Container>}
 
             <Container mt='5' minW='container.lg'>
-                <Accordion defaultIndex={[0]} allowMultiple>
+                <Accordion mb='5' defaultIndex={[0]} allowMultiple>
                     <AccordionItem>
                         <h2>
                             <AccordionButton>
                                 <Box as="span" flex='1' textAlign='left'>
                                     Timeseries
                                 </Box>
+                                {tsne && <Button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            document.getElementById("scatter-chart")?.scrollIntoView();
+                                        }}
+                                        colorScheme='green'
+                                        variant='outline'
+                                        isLoading={!features} loadingText='Processing'
+                                    >
+                                        Go to TSNE
+                                </Button>}
                                 {shortLabel.length != labels.length && dataToVisualize.labels.length != labels.length && <Box as='span' flex='1' textAlign='right'>
                                     <Button
                                         onClick={(e) => {
@@ -392,8 +403,13 @@ export default function features() {
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
-                {false && tsne && (
-                    <ScattersChart preds={clustering} data={tsne} />
+                {tsne && (
+                    <>
+                        <Box mt={3} mb={3} textAlign='center'>
+                            <Text>TSNE chart</Text>
+                        </Box>
+                        <ScattersChart clickHandler={handleModalChart} timeseries={dataToVisualize.data} labels={dataToVisualize.labels} data={tsne} n={ncluster} />
+                    </>
                 )}
             </Container>
             <Modal isOpen={isOpen} onop size='full' onClose={onClose}>

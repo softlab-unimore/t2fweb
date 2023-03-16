@@ -11,60 +11,50 @@ function getRandomColor() {
   return color;
 }
 
-export default function ScattersChart({ data, preds }) {
+export default function ScattersChart({ data, n, clickHandler, timeseries, labels }) {
   if (data.length === 0) return;
 
-  console.log(data);
   useEffect(() => {
     ChartJS.register(
       ...registerables
     );
   }, []);
   
-  const labels = data.map(() => '');
-  const colors = data.map((v) => getRandomColor());
-  const datasets = {
-      data: data,
-      borderColor: colors,
-      backgroundColor: colors,
+  const colors = {};
+  for (let index = 0; index < n; index++) {
+    colors[index] = getRandomColor();
+  }
+
+  const datasets = [];
+
+  data.map((v, i) => {
+    const dataset = {
+      label: 'Cluster ' + v['label'].toString() + ', ' + (labels[i] ? labels[i] : `Timeserie ${i + 1}`),
+      data: [{
+        x: v['x'],
+        y: v['y'],
+      }],
+      borderColor: colors[v['label']],
+      backgroundColor: colors[v['label']],
     };
+    datasets.push(dataset);
+  });
 
   const chartData = {
-    labels,
-    datasets: [datasets],
+    datasets: datasets,
   };
 
   const options = {
+    onClick: (e, item) => {
+      const timeserieIndex = item[0]['datasetIndex'];
+      const label = labels[timeserieIndex] ? labels[timeserieIndex] : `Timeserie ${timeserieIndex + 1}`;
+
+      if (timeseries[timeserieIndex] !== undefined)
+        clickHandler(timeseries[timeserieIndex], label, timeserieIndex);
+    },
     responsive: true,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
-    stacked: false,
-    scales: {
-      x: {
-        grid: {
-          drawOnChartArea: false
-        },
-        ticks: {
-          display: false
-        }
-      },
-      y: {
-        grid: {
-          drawOnChartArea: false
-        },
-        ticks: {
-          display: false
-        }
-      }
-    },
     plugins: {
       zoom: {
-        limits: {
-          x: { min: -200, max: 200, minRange: 50 },
-          y: { min: -200, max: 200, minRange: 50 }
-        },
         pan: {
           enabled: true,
           mode: 'xy',
@@ -88,12 +78,8 @@ export default function ScattersChart({ data, preds }) {
       legend: {
         display: false
       },
-      title: {
-        display: true,
-        text: 'Chart.js Line Chart',
-      },
     },
   };
 
-  return <Scatter id='y' options={options} data={chartData} />;
+  return <Scatter id='scatter-chart' options={options} data={chartData} />;
 }
