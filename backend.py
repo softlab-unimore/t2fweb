@@ -76,7 +76,7 @@ def scenario(semisupervised: bool = False, analytics: bool = False):
         # Show tsne coordinates with scatter plot
         df_tsne = pd.DataFrame(ts_tsne)
 
-        df_tsne.plot.scatter(x='X', y='Y', c='Label', colormap='viridis')
+        df_tsne.plot.scatter(x='x', y='y', c='label', colormap='viridis')
         plt.show()
 
 

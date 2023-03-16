@@ -251,10 +251,10 @@ def tsne_post():
     # TSNE X and Y coordinates
     tsne = TSNE(learning_rate='auto', init='pca', n_iter=1000)
     arr = tsne.fit_transform(ts_feats)
-    df_tsne = pd.DataFrame({'X': arr[:, 0], 'Y': arr[:, 1]})
+    df_tsne = pd.DataFrame({'x': arr[:, 0], 'y': arr[:, 1]})
 
     # Append preds in TSNE coordinates
-    df_tsne['Label'] = preds
+    df_tsne['label'] = preds
 
     # Transform dataframe into json object
     df_tsne = df_tsne.to_json(orient='records')
