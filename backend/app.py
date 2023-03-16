@@ -237,10 +237,13 @@ def ranking_pivot_post():
 @app.post('/tsne')
 def tsne_post():
     ts_feats = request.json.get('data', [])  # List of transformed time series
+    preds = request.json.get('preds', [])  # Model prediction
 
     # Missing params
-    if not ts_feats:
-        abort(400, 'Missing data argument')
+    if not ts_feats or not preds:
+        abort(400, 'Missing data or preds arguments')
+    if len(ts_feats) != len(preds):
+        abort(400, 'data and preds must have the same length')
 
     # Create pandas dataframe
     ts_feats = pd.DataFrame(ts_feats)
@@ -249,6 +252,9 @@ def tsne_post():
     tsne = TSNE(learning_rate='auto', init='pca', n_iter=1000)
     arr = tsne.fit_transform(ts_feats)
     df_tsne = pd.DataFrame({'X': arr[:, 0], 'Y': arr[:, 1]})
+
+    # Append preds in TSNE coordinates
+    df_tsne['Label'] = preds
 
     # Transform dataframe into json object
     df_tsne = df_tsne.to_json(orient='records')

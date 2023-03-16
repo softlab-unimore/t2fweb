@@ -69,13 +69,12 @@ def scenario(semisupervised: bool = False, analytics: bool = False):
         print(df.head(3))
 
         # TSNE visualization
-        payload = {'data': ts_feats}
+        payload = {'data': ts_feats, 'preds': preds}
         r = requests.post('http://localhost:5000/tsne', json=payload)
         ts_tsne = r.json()
 
         # Show tsne coordinates with scatter plot
         df_tsne = pd.DataFrame(ts_tsne)
-        df_tsne['Label'] = preds
 
         df_tsne.plot.scatter(x='X', y='Y', c='Label', colormap='viridis')
         plt.show()
