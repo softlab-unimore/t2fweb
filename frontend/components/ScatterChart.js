@@ -46,11 +46,13 @@ export default function ScattersChart({ data, n, clickHandler, timeseries, label
 
   const options = {
     onClick: (e, item) => {
-      const timeserieIndex = item[0]['datasetIndex'];
-      const label = labels[timeserieIndex] ? labels[timeserieIndex] : `Timeserie ${timeserieIndex + 1}`;
-
-      if (timeseries[timeserieIndex] !== undefined)
-        clickHandler(timeseries[timeserieIndex], label, timeserieIndex);
+      if (item && item[0] !== undefined) {
+        const timeserieIndex = item[0]['datasetIndex'];
+        const label = labels[timeserieIndex] ? labels[timeserieIndex] : `Timeserie ${timeserieIndex + 1}`;
+  
+        if (timeseries[timeserieIndex] !== undefined)
+          clickHandler(timeseries[timeserieIndex], label, timeserieIndex);
+      }
     },
     responsive: true,
     plugins: {
