@@ -428,22 +428,28 @@ export default function features() {
                         <Table size='sm' variant='striped' colorScheme='green'>
                             <Thead>
                             <Tr>
-                                <Th>Timeseries</Th>
-                                {ranking?.data && 0 in ranking?.data ? Object.keys(ranking.data[0]).map((k) => {
-                                    if (k != 'DISTANCE' && k != 'IDX') {
-                                        return (<Th>{k.replace(/_|\d+/g, '')}</Th>);
-                                    }
-                                }) : null}
+                                <Th className='sticky-column'>Timeseries</Th>
                                 <Th>Distance</Th>
                                 <Th>Label</Th>
+                                {ranking?.data && 0 in ranking?.data ? Object.keys(ranking.data[0]).slice(20).map((k) => {
+                                    if (k != 'DISTANCE' && k != 'IDX') {
+                                        return (<Th>{k}</Th>);
+                                    }
+                                }) : null}
                             </Tr>
                             </Thead>
                             <Tbody>
                             {ranking?.data && ranking.data.map((v, k) => {
                                 return (
                                     <Tr>
-                                        <Td>
+                                        <Td className='sticky-column'>
                                             {dataToVisualize.labels[v['IDX']] ? dataToVisualize.labels[v['IDX']] : `Timeserie ${v['IDX']}`}
+                                        </Td>
+                                        <Td>
+                                            {v['DISTANCE'].toFixed(2)}
+                                        </Td>
+                                        <Td>
+                                            {ranking.preds[k].toFixed(2)}
                                         </Td>
                                         {Object.keys(v).map((k) => {
                                             if (k != 'DISTANCE' && k != 'IDX') {
@@ -452,12 +458,6 @@ export default function features() {
                                                 );
                                             }
                                         })}
-                                        <Td>
-                                            {v['DISTANCE'].toFixed(2)}
-                                        </Td>
-                                        <Td>
-                                            {ranking.preds[k].toFixed(2)}
-                                        </Td>
                                     </Tr>
                                 )
                             })}
