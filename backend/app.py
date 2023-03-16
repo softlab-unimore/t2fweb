@@ -212,7 +212,7 @@ def ranking_pivot_post():
 
     # Insert distance and position column in dataset
     columns = list(ts_feats.columns)
-    ts_feats['DISTANCE'] = dist[0, :]
+    ts_feats['DISTANCE'] = dist[0, :][ranks]
     ts_feats['IDX'] = ts_feats.index
 
     columns = ['IDX', 'DISTANCE'] + columns
