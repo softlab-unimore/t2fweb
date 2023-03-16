@@ -53,6 +53,8 @@ import { useRecoilState } from 'recoil';
 import { baseState, labelState, featuresState, featuresSelectedState, selectState, clusteringState } from '../state/index';
 
 import dynamic from "next/dynamic"
+import handleTsne from '../utils/tsne';
+import ScattersChart from '../components/ScatterChart';
 const LineChart = dynamic(() => import("../components/LineChart"), {
     // Do not import in server side
     ssr: false,
@@ -72,6 +74,7 @@ export default function features() {
 
     const [labelTrain, setLabelTrain] = useState([]);
     const [ranking, setRanking] = useState([]);
+    const [tsne, setTsne] = useState({});
 
     const [evaluation, setEvaluation] = useState(undefined);
     const [ncluster, setNcluster] = useState(4);
@@ -147,7 +150,6 @@ export default function features() {
     }
 
     const updateSelectedFeatures = () => {
-        console.log('feat', features);
         if (Object.keys(featuresSelected).length === 0) return 0;
         const enabledFeatures = Object.keys(featuresSelected).filter((k) => featuresSelected[k]);
         let requestFeatures = [...Object.values(features)];
@@ -167,6 +169,7 @@ export default function features() {
         }
 
         // updateSelectedFeatures();
+        handleTsne(select, (v) => setTsne(v));
 
         if (select) {
             const labelTrainData = (Object.values(labelTrain).length > 0) ? labelTrain : null;
@@ -389,6 +392,9 @@ export default function features() {
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
+                {false && tsne && (
+                    <ScattersChart preds={clustering} data={tsne} />
+                )}
             </Container>
             <Modal isOpen={isOpen} onop size='full' onClose={onClose}>
                 <ModalOverlay />

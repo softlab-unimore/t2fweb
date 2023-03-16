@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Chart as ChartJS, registerables } from 'chart.js/auto';
-import { Chart, Bar } from 'react-chartjs-2';
+import { Chart, Scatter } from 'react-chartjs-2';
 
 function getRandomColor() {
   var letters = '0123456789ABCDEF';
@@ -11,7 +11,7 @@ function getRandomColor() {
   return color;
 }
 
-export default function BarsChart({ data }) {
+export default function ScattersChart({ data, preds }) {
   if (data.length === 0) return;
 
   console.log(data);
@@ -34,7 +34,6 @@ export default function BarsChart({ data }) {
     datasets: [datasets],
   };
 
-  console.log(chartData);
   const options = {
     responsive: true,
     interaction: {
@@ -96,5 +95,5 @@ export default function BarsChart({ data }) {
     },
   };
 
-  return <Bar id='y' options={options} data={chartData} />;
+  return <Scatter id='y' options={options} data={chartData} />;
 }

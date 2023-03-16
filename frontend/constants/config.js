@@ -6,3 +6,4 @@ export const SPLIT_ENDPOINT = '/split';
 export const CLUSTERING_ENDPOINT = '/clustering';
 export const EVALUATION_ENDPOINT = '/evaluation';
 export const RANKING_ENDPOINT = '/ranking';
+export const TSNE_ENDPOINT = '/tsne';
