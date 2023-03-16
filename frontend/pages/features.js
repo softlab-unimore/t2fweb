@@ -374,7 +374,7 @@ export default function features() {
                                     </Tr>
                                     </Thead>
                                     <Tbody>
-                                    {features.slice(0, 40).map((v, k) => {
+                                    {features.map((v, k) => {
                                         return (
                                             <Tr>
                                                 <Td className='sticky-column'>
