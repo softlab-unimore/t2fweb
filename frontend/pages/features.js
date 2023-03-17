@@ -331,8 +331,8 @@ export default function features() {
                                         <Box key={i}>
                                             <Card className={(clustering) ? `cluster-${clustering.data[i]}` : null}>
                                                 <CardHeader>
-                                                    {clustering && <label>Cluster {clustering.data[i]}</label>}
-                                                    <Input value={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : ''} onChange={(e) => onChangeLabel(e, i)} placeholder={`Timeserie ${i + 1}`} />
+                                                    {clustering && <label><b>Cluster {clustering.data[i]}</b></label>}
+                                                    <Text>{dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Timeserie ${i + 1}`}</Text>
                                                 </CardHeader>
                                                 <CardBody>
                                                     <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} title={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Timeserie ${i + 1}`} index={i} />
