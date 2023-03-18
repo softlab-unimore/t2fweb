@@ -119,28 +119,6 @@ export default function features() {
         });
     };
 
-    const onChangeLabel = (e, i) => {
-        const newLabels = [...labels];
-        newLabels[i] = e.target.value;
-
-        const newDataToVisualizeLabels = [...dataToVisualize.labels];
-        newDataToVisualizeLabels[i] = e.target.value;
-
-        setLabels(() => {
-            return [
-                ...newLabels,
-            ]
-        })
-
-        setDataToVisualize(() => {
-            return {
-                data: dataToVisualize.data,
-                labels: newDataToVisualizeLabels,
-            }
-        });
-
-    }
-
     const onFeatureCheck = (e, i) => {
         const newFeatures = {...featuresSelected};
         newFeatures[i] = e.target.checked;
@@ -331,6 +309,14 @@ export default function features() {
                                         <Box key={i}>
                                             <Card className={(clustering) ? `cluster-${clustering.data[i]}` : null}>
                                                 <CardHeader>
+                                                    {serverData?.labels.length == 0 && <Checkbox
+                                                        style={{float: 'right'}}
+                                                        textAlign='right'
+                                                        onChange={(e) => onFeatureCheck(e, i)}
+                                                        isChecked={featuresSelected[i]}
+                                                        size='md'
+                                                        colorScheme='green'
+                                                    />}
                                                     {clustering && <label><b>Cluster {clustering.data[i]}</b></label>}
                                                     <Text>{dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Timeserie ${i + 1}`}</Text>
                                                 </CardHeader>
@@ -366,7 +352,6 @@ export default function features() {
                                         {Object.keys(features[0]).slice(0, 40).map((k) => {
                                             return (
                                                 <Th isNumeric>
-                                                    <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
                                                     &nbsp;{k.replace(/_|\d+/g, '')}
                                                 </Th>
                                             );
@@ -391,7 +376,6 @@ export default function features() {
                                         {Object.keys(features[0]).slice(0, 40).map((k) => {
                                             return (
                                                 <Th isNumeric>
-                                                    <Checkbox onChange={(e) => onFeatureCheck(e, k)} isChecked={featuresSelected[k]} size='sm' colorScheme='green' />
                                                     &nbsp;{k.replace(/_|\d+/g, '')}
                                                 </Th>
                                             );
