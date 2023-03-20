@@ -176,7 +176,7 @@ export default function features() {
                     File uploaded successfully!
                 </Heading>
                 <Text color={'gray.500'}>
-                    Now you can view your timeseries, select and assign/edit label to features and go on
+                    Now you can view your Time Series, select and assign/edit label to features and go on
                 </Text>
             </Box>
 
@@ -272,7 +272,7 @@ export default function features() {
                         <h2>
                             <AccordionButton>
                                 <Box as="span" flex='1' textAlign='left'>
-                                    Timeseries
+                                    Time Series
                                 </Box>
                                 {tsne && <Button
                                         onClick={(e) => {
@@ -318,10 +318,10 @@ export default function features() {
                                                         colorScheme='green'
                                                     />}
                                                     {clustering && <label><b>Cluster {clustering.data[i]}</b></label>}
-                                                    <Text>{dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Timeserie ${i + 1}`}</Text>
+                                                    <Text>{dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Time Series ${i + 1}`}</Text>
                                                 </CardHeader>
                                                 <CardBody>
-                                                    <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} title={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Timeserie ${i + 1}`} index={i} />
+                                                    <LineChart legendDisplayed={false} clickHandler={handleModalChart} timeserie={timeserie} title={dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Time Series ${i + 1}`} index={i} />
                                                 </CardBody>
                                             </Card>
                                         </Box>
@@ -352,7 +352,7 @@ export default function features() {
                                         {Object.keys(features[0]).slice(0, 40).map((k) => {
                                             return (
                                                 <Th isNumeric>
-                                                    &nbsp;{k.replace(/_|\d+/g, '')}
+                                                    &nbsp;{k}
                                                 </Th>
                                             );
                                         })}
@@ -363,7 +363,7 @@ export default function features() {
                                         return (
                                             <Tr>
                                                 <Td className='sticky-column'>
-                                                    {dataToVisualize.labels[k] ? dataToVisualize.labels[k] : `Timeserie ${k}`}
+                                                    {dataToVisualize.labels[k] ? dataToVisualize.labels[k] : `Time Series ${k}`}
                                                 </Td>
                                                 {Object.values(v).slice(0, 40).map((feat) => <Td isNumeric>{feat.toFixed(2)}</Td>)}
                                             </Tr>
@@ -376,7 +376,7 @@ export default function features() {
                                         {Object.keys(features[0]).slice(0, 40).map((k) => {
                                             return (
                                                 <Th isNumeric>
-                                                    &nbsp;{k.replace(/_|\d+/g, '')}
+                                                    &nbsp;{k}
                                                 </Th>
                                             );
                                         })}
@@ -412,7 +412,7 @@ export default function features() {
                         <Table size='sm' variant='striped' colorScheme='green'>
                             <Thead>
                             <Tr>
-                                <Th className='sticky-column'>Timeseries</Th>
+                                <Th className='sticky-column'>Time Series</Th>
                                 <Th>Distance</Th>
                                 <Th>Label</Th>
                                 {ranking?.data && 0 in ranking?.data ? Object.keys(ranking.data[0]).slice(20).map((k) => {
@@ -427,7 +427,7 @@ export default function features() {
                                 return (
                                     <Tr>
                                         <Td className='sticky-column'>
-                                            {dataToVisualize.labels[v['IDX']] ? dataToVisualize.labels[v['IDX']] : `Timeserie ${v['IDX']}`}
+                                            {dataToVisualize.labels[v['IDX']] ? dataToVisualize.labels[v['IDX']] : `Time Series ${v['IDX']}`}
                                         </Td>
                                         <Td>
                                             {v['DISTANCE'].toFixed(2)}
