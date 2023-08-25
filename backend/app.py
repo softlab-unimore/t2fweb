@@ -249,7 +249,7 @@ def tsne_post():
     ts_feats = pd.DataFrame(ts_feats)
 
     # TSNE X and Y coordinates
-    tsne = TSNE(learning_rate='auto', init='pca', n_iter=1000)
+    tsne = TSNE(learning_rate='auto', init='pca', n_iter=1000, perplexity=15)
     arr = tsne.fit_transform(ts_feats)
     df_tsne = pd.DataFrame({'x': arr[:, 0], 'y': arr[:, 1]})
 

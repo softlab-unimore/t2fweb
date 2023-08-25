@@ -76,11 +76,20 @@ export default function features() {
     const [ranking, setRanking] = useState([]);
     const [tsne, setTsne] = useState(null);
 
+    const [labelClusters, setLabelCluster] = useState({});
+
     const [evaluation, setEvaluation] = useState(undefined);
     const [ncluster, setNcluster] = useState(4);
     const [trainSizeValue, setSliderValue] = useState(30)
     const [showTooltip, setShowTooltip] = React.useState(false)
     const [{ modelType, transformType }, setParams] = useState({ modelType: 'Hierarchical', transformType: 'std' });
+
+    const sportMap = {
+        'standing': 0,
+        'running': 1,
+        'walking': 2,
+        'badminton': 3,
+    };
 
     useEffect(() => {
         if (serverData !== undefined && !featureRequestSent) {
@@ -127,7 +136,7 @@ export default function features() {
         })
     }
 
-    const updateSelectedFeatures = () => {
+    const updateSelectedFeatures = (labelTrainMocked = null) => {
         if (Object.keys(featuresSelected).length === 0) return 0;
         const enabledFeatures = Object.keys(featuresSelected).filter((k) => featuresSelected[k]);
         let requestFeatures = [...Object.values(features)];
@@ -137,19 +146,33 @@ export default function features() {
             })
         }
 
-        const labelTrainData = (Object.values(labelTrain).length > 0) ? Object.fromEntries(Object.entries(labelTrain).filter((k) => k[0] <= dataToVisualize.labels.length-1)) : null;
-        handleSelect(requestFeatures, modelType, transformType, labelTrainData, (data) => setSelectState(data), dataToVisualize.labels.length);
+        let labelTrainToUse = labelTrainMocked ? labelTrainMocked : labelTrain;
+        const labelTrainData = (Object.values(labelTrainToUse).length > 0) ? Object.fromEntries(Object.entries(labelTrainToUse).filter((k) => k[0] <= dataToVisualize.labels.length-1)) : null;
+        handleSelect(requestFeatures, modelType, transformType, labelTrainData, (data) => { setSelectState(data); console.log(data)}, dataToVisualize.labels.length);
     };
 
     const onClustering = () => {
         if (labels && labels.length > 0) {
             handleSplit(labels, trainSizeValue/100, (d) => setLabelTrain(d.data));
+            if (select) {
+                doClustering();
+            }
+        } else {
+            let mappedClusterSport = {};
+            const labelClusterKeys = Object.keys(labelClusters);
+            Object.values(labelClusters).map((c, i) => { mappedClusterSport[labelClusterKeys[i]] = parseInt(sportMap[c.trim().toLowerCase()]); });
+            setLabelTrain(mappedClusterSport);
+
+            updateSelectedFeatures(mappedClusterSport);
+
+            setTimeout(() => {
+                doClustering();
+            }, 6000);
         }
+    };
 
-        // updateSelectedFeatures();
-
-        if (select) {
-            const labelTrainData = (Object.values(labelTrain).length > 0) ? labelTrain : null;
+    const doClustering = () => {
+        const labelTrainData = (Object.values(labelTrain).length > 0) ? labelTrain : null;
             handleClustering(select, ncluster, modelType, transformType, labelTrainData, (d) => {
                 setClusteringState(d);
                 if (labels.length > 0) {
@@ -157,7 +180,6 @@ export default function features() {
                 }
                 handleTsne(select, d.data, (v) => setTsne(v));
             });
-        }
     };
 
     const handleModalChart = (timeserie, title, index) => {
@@ -317,7 +339,13 @@ export default function features() {
                                                         size='md'
                                                         colorScheme='green'
                                                     />}
-                                                    {clustering && <label><b>Cluster {clustering.data[i]}</b></label>}
+                                                    {clustering && 
+                                                    <Input variant='outline' onChange={({ target }) => setLabelCluster((old) => {
+                                                        return {
+                                                            ...old,
+                                                            [i]: target.value
+                                                        }
+                                                    })} placeholder={`Cluster ${clustering.data[i]}`} />}
                                                     <Text>{dataToVisualize.labels[i] ? dataToVisualize.labels[i] : `Time Series ${i + 1}`}</Text>
                                                 </CardHeader>
                                                 <CardBody>
